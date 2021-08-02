@@ -1,0 +1,345 @@
+---
+title: "Econ 10R Week 1"
+author: "Luke Zhang"
+output:
+  html_document:
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Objects in R
+
+Generally speaking, objects are where you store your data. Your data may be in different forms, shapes and dimensions, and assigning them as objects will make it easy for you to reference them in R. Let's take a look.
+
+```{r}
+a <- 1
+```
+
+We have a piece of information (datum), 1. Now we have assigned this information to an R object, `a`. After this, R knows what `a` contains. Whenever you call for `a`, it will show you what `a` is.
+
+```{r}
+a
+```
+
+You can even perform certain operations on the object, depending on the nature of the object.
+
+```{r}
+a+1
+```
+
+This seems simple and useless enough, but when you have a lot more information to store, it becomes much more useful. Consider the case where you want to create a die on your computer. A standard die has six numbers on it, so it will need to store six numbers.
+
+```{r}
+die <- 1:6
+die
+```
+
+You have a lot of liberty in naming objects, but just try to avoid using symbols like `^`, `!`, `$`, `@`, `+`, `-`, `/`, or `*`, as they all have their own uses in a line of code. Also, it is worth remembering that R is case-sensitive, so naming objects with a capital letter will make it a different object entirely.
+
+You can check the names you have used for objects with the following command:
+
+```{r}
+ls()
+```
+
+Another very useful tool for beginners that is often overlooked is removing objects in the environment. As a beginner, you will make a lot of mistakes when assigning objects. It is then very useful to clear the environment while keeping all the packages you have loaded (we will talk about packages later) so that you can run everything again after correcting for the mistakes in the code. You can use the following command
+
+```{r}
+rm(list = ls())
+```
+
+If you want to remove one or a few objects only (instead of clearing everything in the environment), you can simply write `rm(object name)`.
+
+You can also do operations on R objects just like numbers. We also saw that you can add 1 to the object `a`. You can do the same thing for the object `die`. However, without further specification, R will assume the operation is pairwise (element-wise) - it will apply the operation to each element in the object. Let us look at an example:
+
+```{r}
+a <- 1
+die <- 1:6
+die+1
+```
+
+We can see that each element in `die` increased by 1. If you multiply `die` with `die`, instead of returning a six by six matrix, it will return a vector of the same dimension after element-wise operation:
+
+```{r}
+die * die
+```
+
+This is the result of simply asking R to multiply the vectors. If you wish to get a matrix, you need more specific command:
+
+```{r}
+die %o% die
+```
+
+Or to get the dot product
+
+```{r}
+die %*% die
+```
+
+This course is not about linear algebra, so you do not have to remember all these operations or know what they mean unless you are interested in linear algebra (you should). This is just to tell you the basics in operation on objects in R. Next, we will move on to more specific examples.
+
+## Atomic Vectors
+
+Let's try to create more complicated datasets in R from scratch. Think of an Excel sheet you've seen before. We will be creating one of those from scratch. In Excel, what you have to do is choose a cell and put numbers or texts in them. In R, we code them so that it is easy to track what you have done in each step.
+
+We start with atomic vectors, which are just basic vectors. Recall how we created the `die` vector before. Now let us do it more formally.
+
+```{r}
+rm(list = ls())
+die <- c(1, 2, 3, 4, 5, 6)
+die
+```
+
+You can use `c` to create atomic vectors by grouping values together. You can check if an object is a vector by using the `is.vector` command:
+
+```{r}
+is.vector(die)
+```
+
+Atomic vectors do not need to contain just numbers. They can be a vector of characters as well. For instance:
+
+```{r}
+text <- c("32", "Olympic", "Games")
+text
+```
+
+Notice that the number `32` can also be a character. A simple rule is that when R displays something with quotation mark around them, then they are character strings rather than numbers.
+
+One last thing I want to emphasize is the logical operators. Whenever you use or see `TRUE` and `FALSE` without quotation marks, they act as logical operators. For example:
+
+```{r}
+1+1>2
+```
+
+So we are told that 1+1 is not greater than 2 by R. What a surprise. These two logical operators are very important later on in the course, when you have to specify whether to enable or disable certain option. We will see in another example later.
+
+## Attributes
+
+Attributes are basically information of the vector that you attach to. Common ones include names (labels), dimensions and classes. For now we focus on names. Names are simply labels of the values in the vector. Take the `die` vector we created earlier as an example. We can first check if there are any names attributes:
+
+```{r}
+names(die)
+```
+
+Clearly it does not. Now we can assign names to `die`. The way to do it is to create a vector of characters that you wish to name the values of `die`, then assign them to the output of `names(die)`:
+
+```{r}
+names(die) <- c("one", "two", "three", "four", "five", "six")
+names(die)
+```
+
+Now if you check the vector again, it will show both the values and attributes:
+
+```{r}
+die
+```
+
+To emphasize that names are basically just labels, we can do the following:
+
+```{r}
+die+1
+```
+
+As you can see, the names correspond to the values only as labels, and are not related to the nature of the values.
+
+## Matrices
+
+Matrices store data in two-dimensional array, same as in matrix in linear algebra. We can create a matrix based on the atomic vector `die` we already have. We then tell R how many rows or columns we want for this matrix:
+
+```{r}
+m <- matrix(die, nrow = 2)
+m
+```
+
+This `m` matrix we created is two (row) by three (column) in dimension, as can be seen through the command `nrow=2`. We can also see that the logic R uses to fill out the matrix is to complete column first. This can be changed by a simple command:
+
+```{r}
+m <- matrix(die, nrow = 2, byrow = TRUE)
+m
+```
+
+Now R fills each row first before moving on to the next. Also, note that we used the logical operator `TRUE` to enable the `byrow` option. Logical operators are most commonly used in this type of scenario.
+
+## Lists
+
+Lists are like atomic vectors, except that they do not group values together - they group objects together. Let us take a look:
+
+```{r}
+list1 <- list(die, m, text)
+list1
+```
+
+It is easy to see that `list` is a great way to group things together in R as there is no restriction on what it can contain - elements in a list do not have to have the same type.
+
+## Data Frame
+
+Data frame is one of, if not the, most powerful way to store data in R. You can think of a data frame as an Excel spreadsheet as they are both two dimensional. A vector will become a column in a data frame. We can create a simple data frame by hand to see how it works:
+
+```{r}
+df <- data.frame(face = c("ace", "two", "six"),  
+  suit = c("clubs", "clubs", "clubs"), value = c(1, 2, 6))
+df
+```
+
+Data frames share some similarities with lists. You can create the above data frame in a list as well. Data frame is more restrictive when it comes to its formation, but is also a clearer way to present data. Let us see another example:
+
+```{r}
+df2 <- data.frame(Name = c("Bolt", "Powell", "Gatlin"),
+                  Record = c(9.58, 9.72, 9.74),
+                  Nationality = c("Jamaican", "Jamaican", "American"))
+df2
+```
+
+We have three observations with three variables. The first observation has `"Bolt"` recorded under the first variable, `9.58` under the second variable and `"Jamaican"` under the third. Everything is tidy and clear.
+
+## Loading and Saving Data
+
+Creating data frames by hand is not practical if you have even just a little bit more data. Not only is it too time consuming, but you will inevitably make typos and mistakes. Moreoever, the data we analyze are usualy from external sources. It is then only natural to learn how to load downloaded data into R, deal with them, and then save them as an output.
+
+We downloaded the `deck.csv` from the HOP textbook. Let's try and load it. First, to simplify your task, just put the file under the same folder as your `Rmd` file. Then we can read the data with the following command:
+
+```{r}
+read.csv("deck.csv")
+```
+Simple enough. However, we cannot do anything with it yet as we only told R to read the dataset, not load it. To do so, we can create a new data frame and load the data into it:
+
+```{r}
+deck <- read.csv("deck.csv")
+```
+
+Now we have a deck of cards. We can start to manipulate them if we want, but let's just hold off for now. Suppose that you are done with the analysis and want to save your output, we can use the following command:
+
+```{r}
+write.csv(deck, file = "cards.csv", row.names = FALSE)
+```
+
+Now the data frame `deck` is saved as `cards.csv`. Note that we are simply saving the file into the same path that we are working on, so if you wish to save it in a different place, you can either change the working directory or write out the full path. Also, make sure if you are naming your data right. Do not name your output with the same name as your original, raw data. If you did this while working in the same folder, you might overwrite your raw data, which is something you will never want to do.
+
+The option `row.names = FALSE` prevents R from creating an extra column containing numbers that identify your observations (1 to 52). It is not very useful because most software will just treat it as a column of data.
+
+# Basic Notations in R
+
+So far we have learned several ways of structuring data in R, and we have a fully loaded dataset, `deck`. Now we can play around the dataset a little bit.
+
+## Selecting Values
+
+To select a (set of) specific value from a data frame, we can use the following command:
+
+```{r}
+deck[1, 1]
+```
+
+The first number in the square bracket is the row you want, and the second number refers to the column. There are several ways to extract an entire row or column:
+
+```{r}
+deck[1, ]
+deck[1, c(1:3)]
+deck[1, c("face", "suit", "value")]
+```
+
+All three commands return the same thing. If you wish to ignore a particular column or row, you can simply drop it from the selection:
+
+```{r}
+deck[1, c(1:2)]
+deck[1, c(1, 3)]
+```
+
+You can also do the same thing with a negative sign:
+
+```{r}
+deck[1, c(1:2)]
+deck[1, -3]
+```
+
+When a minus sign is added, it excludes rather than includes the corresponding row or column. If we want to drop the king of spades only, we can do:
+
+```{r}
+deck[-1, ]
+```
+
+## Deal Cards with Functions
+
+Now we know how to extract a certain card, we can write a function to deal a card. We can simply as R to return the one on the top of the deck:
+
+```{r}
+deal <- function(x){
+  x[1, ]
+}
+deal(deck)
+```
+
+However, if you run this function over and over, it will keep returning the king of spades to you. This is because neither does r know that king of spades should be taken away aftering being selected, nor do we shuffle the deck afterwards. It is more difficult to do the former, so let's try the latter for now.
+
+## Shuffle Cards with Functions
+
+Before we jump straight to shuffling the deck, let us try to use what we learned so far to reorganize the deck the way we want. Suppose I want to move the second card from top (second row) to the first and keep everything else unchanged:
+
+```{r}
+deck[c(2, 1, 3:52), ]
+```
+
+This is simple: I wrote down specifically the order of the rows (row 2 first, row 1 second, and then 3 to 52), and left the column blank so every column is included. This is no where near random shuffling. However, this gives us a hint: as long as we can randomly order the 52 rows, we can assign the new order to the deck and have it shuffled. To do so, we use the following command:
+
+```{r}
+random <- sample(1:52, size = 52)
+random
+```
+
+And let's apply this new order to the deck:
+
+```{r}
+deck[random, ]
+```
+Now we can shuffle and create a new deck using a `shuffle` function:
+
+```{r}
+shuffle <- function(x){
+  random <- sample(1:52, size = 52)
+  x[random, ]
+}
+deck2 <- shuffle(deck)
+deck2
+```
+
+Now we can deal and get a different card:
+
+```{r}
+deal(deck2)
+```
+
+We can even combine the two steps and skip the creationg of a new data frame (deck2):
+
+```{r}
+deal(shuffle(deck))
+
+deal(shuffle(deck))
+
+deal(shuffle(deck))
+```
+
+You can see that we have different result every time. True shuffling it is.
+
+## Dollar Sign
+
+A quick note on how to reference a particular column in a data frame or a list. Usually in economics, we will assign labels to variables. We can use the label and dollar signs as reference. For example, if I wish to extract the first column of the deck (the column that has the face of the cards), we can simply write:
+
+```{r}
+deck$face
+```
+
+We can incorporate this when we do calculations. For example:
+
+```{r}
+mean(deck$value)
+```
+
+For lists, we can do the same:
+
+```{r}
+names(list1) <- c("One", "Two", "Three")
+list1$One
+```
+
