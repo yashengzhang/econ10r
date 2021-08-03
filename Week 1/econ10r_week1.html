@@ -532,64 +532,64 @@ deal(deck)</code></pre>
 <p>This is simple: I wrote down specifically the order of the rows (row 2 first, row 1 second, and then 3 to 52), and left the column blank so every column is included. This is no where near random shuffling. However, this gives us a hint: as long as we can randomly order the 52 rows, we can assign the new order to the deck and have it shuffled. To do so, we use the following command:</p>
 <pre class="r"><code>random &lt;- sample(1:52, size = 52)
 random</code></pre>
-<pre><code>##  [1] 43 19 32 33  6 45  1 23 21  9 44 49  3 46 16 26  5 10 24 30 41 36 52 28  7
-## [26] 48 18 38 15  8 50 11 13 39  2 25 34 37 47 51 14 17 20 40 35 22  4 29 31 42
-## [51] 12 27</code></pre>
+<pre><code>##  [1] 44 14 47 42 52 15  1 46 13 38 20 22  7 36 41 10 50 25  3 28 11  2 30 17 33
+## [26] 18  5 48 39 45 34 16 49 31 27 19 37 26 29  9  6 51 21  4 40 24 32  8 12 43
+## [51] 35 23</code></pre>
 <p>And let’s apply this new order to the deck:</p>
 <pre class="r"><code>deck[random, ]</code></pre>
 <pre><code>##     face     suit value
-## 43   ten   hearts    10
-## 19 eight    clubs     8
-## 32 eight diamonds     8
-## 33 seven diamonds     7
-## 6  eight   spades     8
-## 45 eight   hearts     8
-## 1   king   spades    13
-## 23  four    clubs     4
-## 21   six    clubs     6
-## 9   five   spades     5
 ## 44  nine   hearts     9
-## 49  four   hearts     4
-## 3   jack   spades    11
-## 46 seven   hearts     7
-## 16  jack    clubs    11
-## 26   ace    clubs     1
-## 5   nine   spades     9
-## 10  four   spades     4
-## 24 three    clubs     3
-## 30   ten diamonds    10
-## 41 queen   hearts    12
-## 36  four diamonds     4
-## 52   ace   hearts     1
-## 28 queen diamonds    12
-## 7  seven   spades     7
-## 48  five   hearts     5
-## 18  nine    clubs     9
-## 38   two diamonds     2
-## 15 queen    clubs    12
-## 8    six   spades     6
-## 50 three   hearts     3
-## 11 three   spades     3
-## 13   ace   spades     1
-## 39   ace diamonds     1
-## 2  queen   spades    12
-## 25   two    clubs     2
-## 34   six diamonds     6
-## 37 three diamonds     3
-## 47   six   hearts     6
-## 51   two   hearts     2
 ## 14  king    clubs    13
-## 17   ten    clubs    10
-## 20 seven    clubs     7
-## 40  king   hearts    13
-## 35  five diamonds     5
-## 22  five    clubs     5
-## 4    ten   spades    10
-## 29  jack diamonds    11
-## 31  nine diamonds     9
+## 47   six   hearts     6
 ## 42  jack   hearts    11
+## 52   ace   hearts     1
+## 15 queen    clubs    12
+## 1   king   spades    13
+## 46 seven   hearts     7
+## 13   ace   spades     1
+## 38   two diamonds     2
+## 20 seven    clubs     7
+## 22  five    clubs     5
+## 7  seven   spades     7
+## 36  four diamonds     4
+## 41 queen   hearts    12
+## 10  four   spades     4
+## 50 three   hearts     3
+## 25   two    clubs     2
+## 3   jack   spades    11
+## 28 queen diamonds    12
+## 11 three   spades     3
+## 2  queen   spades    12
+## 30   ten diamonds    10
+## 17   ten    clubs    10
+## 33 seven diamonds     7
+## 18  nine    clubs     9
+## 5   nine   spades     9
+## 48  five   hearts     5
+## 39   ace diamonds     1
+## 45 eight   hearts     8
+## 34   six diamonds     6
+## 16  jack    clubs    11
+## 49  four   hearts     4
+## 31  nine diamonds     9
+## 27  king diamonds    13
+## 19 eight    clubs     8
+## 37 three diamonds     3
+## 26   ace    clubs     1
+## 29  jack diamonds    11
+## 9   five   spades     5
+## 6  eight   spades     8
+## 51   two   hearts     2
+## 21   six    clubs     6
+## 4    ten   spades    10
+## 40  king   hearts    13
+## 24 three    clubs     3
+## 32 eight diamonds     8
+## 8    six   spades     6
 ## 12   two   spades     2
-## 27  king diamonds    13</code></pre>
+## 43   ten   hearts    10
+## 35  five diamonds     5
+## 23  four    clubs     4</code></pre>
 <p>Now we can shuffle and create a new deck using a <code>shuffle</code> function:</p>
 <pre class="r"><code>shuffle &lt;- function(x){
   random &lt;- sample(1:52, size = 52)
@@ -598,72 +598,72 @@ random</code></pre>
 deck2 &lt;- shuffle(deck)
 deck2</code></pre>
 <pre><code>##     face     suit value
-## 4    ten   spades    10
-## 28 queen diamonds    12
-## 31  nine diamonds     9
-## 27  king diamonds    13
-## 10  four   spades     4
-## 18  nine    clubs     9
-## 9   five   spades     5
-## 14  king    clubs    13
-## 48  five   hearts     5
-## 51   two   hearts     2
-## 29  jack diamonds    11
-## 3   jack   spades    11
-## 21   six    clubs     6
-## 37 three diamonds     3
-## 11 three   spades     3
-## 50 three   hearts     3
-## 39   ace diamonds     1
-## 52   ace   hearts     1
-## 16  jack    clubs    11
-## 40  king   hearts    13
-## 6  eight   spades     8
-## 44  nine   hearts     9
-## 1   king   spades    13
-## 24 three    clubs     3
-## 25   two    clubs     2
-## 32 eight diamonds     8
-## 19 eight    clubs     8
-## 38   two diamonds     2
-## 7  seven   spades     7
-## 26   ace    clubs     1
-## 46 seven   hearts     7
-## 42  jack   hearts    11
-## 20 seven    clubs     7
-## 49  four   hearts     4
-## 17   ten    clubs    10
-## 35  five diamonds     5
-## 30   ten diamonds    10
-## 8    six   spades     6
-## 33 seven diamonds     7
-## 5   nine   spades     9
-## 2  queen   spades    12
-## 22  five    clubs     5
-## 12   two   spades     2
-## 23  four    clubs     4
-## 13   ace   spades     1
-## 15 queen    clubs    12
-## 36  four diamonds     4
-## 43   ten   hearts    10
-## 41 queen   hearts    12
-## 45 eight   hearts     8
 ## 47   six   hearts     6
-## 34   six diamonds     6</code></pre>
+## 13   ace   spades     1
+## 39   ace diamonds     1
+## 19 eight    clubs     8
+## 4    ten   spades    10
+## 24 three    clubs     3
+## 43   ten   hearts    10
+## 45 eight   hearts     8
+## 30   ten diamonds    10
+## 7  seven   spades     7
+## 23  four    clubs     4
+## 10  four   spades     4
+## 28 queen diamonds    12
+## 14  king    clubs    13
+## 20 seven    clubs     7
+## 38   two diamonds     2
+## 51   two   hearts     2
+## 2  queen   spades    12
+## 32 eight diamonds     8
+## 36  four diamonds     4
+## 16  jack    clubs    11
+## 25   two    clubs     2
+## 26   ace    clubs     1
+## 5   nine   spades     9
+## 34   six diamonds     6
+## 9   five   spades     5
+## 1   king   spades    13
+## 29  jack diamonds    11
+## 40  king   hearts    13
+## 11 three   spades     3
+## 17   ten    clubs    10
+## 49  four   hearts     4
+## 46 seven   hearts     7
+## 21   six    clubs     6
+## 12   two   spades     2
+## 41 queen   hearts    12
+## 22  five    clubs     5
+## 15 queen    clubs    12
+## 31  nine diamonds     9
+## 52   ace   hearts     1
+## 33 seven diamonds     7
+## 44  nine   hearts     9
+## 18  nine    clubs     9
+## 6  eight   spades     8
+## 48  five   hearts     5
+## 42  jack   hearts    11
+## 3   jack   spades    11
+## 27  king diamonds    13
+## 35  five diamonds     5
+## 50 three   hearts     3
+## 37 three diamonds     3
+## 8    six   spades     6</code></pre>
 <p>Now we can deal and get a different card:</p>
 <pre class="r"><code>deal(deck2)</code></pre>
-<pre><code>##   face   suit value
-## 4  ten spades    10</code></pre>
+<pre><code>##    face   suit value
+## 47  six hearts     6</code></pre>
 <p>We can even combine the two steps and skip the creationg of a new data frame (deck2):</p>
 <pre class="r"><code>deal(shuffle(deck))</code></pre>
-<pre><code>##    face   suit value
-## 6 eight spades     8</code></pre>
+<pre><code>##     face   suit value
+## 45 eight hearts     8</code></pre>
 <pre class="r"><code>deal(shuffle(deck))</code></pre>
 <pre><code>##    face   suit value
-## 52  ace hearts     1</code></pre>
+## 13  ace spades     1</code></pre>
 <pre class="r"><code>deal(shuffle(deck))</code></pre>
-<pre><code>##   face   suit value
-## 9 five spades     5</code></pre>
+<pre><code>##     face  suit value
+## 15 queen clubs    12</code></pre>
 <p>You can see that we have different result every time. True shuffling it is.</p>
 </div>
 <div id="dollar-sign" class="section level2" number="2.4">
@@ -684,6 +684,68 @@ deck2</code></pre>
 list1$One</code></pre>
 <pre><code>##   one   two three  four  five   six 
 ##     1     2     3     4     5     6</code></pre>
+</div>
+</div>
+<div id="modifying-values-in-r" class="section level1" number="3">
+<h1 number="3"><span class="header-section-number">3</span> Modifying Values in R</h1>
+<p>Most of the time, the data you load into R are not perfect like the one we just used. You will encounter typos, non-numeric values in the place where numbers should be, missing values and extreme values. Furthermore, as you may load data in many different formats (e.g., <code>csv</code>, <code>xlsx</code> and <code>dta</code>), each may have different way of treating missing observations and therefore causing R to react to them differently. Hence it is imperative that we learn how to modify (usually on a small scale) values in R.</p>
+<div id="changing-values" class="section level2" number="3.1">
+<h2 number="3.1"><span class="header-section-number">3.1</span> Changing values</h2>
+<p>Let us use the <code>die</code> vector as examples. Suppose we want to change the first value in <code>die</code> to 1000, we can use the following command:</p>
+<pre class="r"><code>die[1] &lt;- 1000
+die</code></pre>
+<pre><code>##   one   two three  four  five   six 
+##  1000     2     3     4     5     6</code></pre>
+<p>You can also replace a group of values:</p>
+<pre class="r"><code>die[c(1, 3, 5)] &lt;- c(1000, 3000, 5000)
+die</code></pre>
+<pre><code>##   one   two three  four  five   six 
+##  1000     2  3000     4  5000     6</code></pre>
+<p>And doing certain operations on a group of values:</p>
+<pre class="r"><code>die[c(2, 4, 6)] &lt;- die[c(2, 4, 6)] + 1
+die</code></pre>
+<pre><code>##   one   two three  four  five   six 
+##  1000     3  3000     5  5000     7</code></pre>
+<p>You can add observations by directly adding values. For example, the <code>die</code> vector used to have only 6 values, but now we can add a seventh one:</p>
+<pre class="r"><code>die[7] &lt;- 0
+die</code></pre>
+<pre><code>##   one   two three  four  five   six       
+##  1000     3  3000     5  5000     7     0</code></pre>
+<p>You can also add a new variable to a data frame in the same way, remember to use the dollar sign:</p>
+<pre class="r"><code>deck2$newvar &lt;- c(1)
+head(deck2)</code></pre>
+<pre><code>##     face     suit value newvar
+## 47   six   hearts     6      1
+## 13   ace   spades     1      1
+## 39   ace diamonds     1      1
+## 19 eight    clubs     8      1
+## 4    ten   spades    10      1
+## 24 three    clubs     3      1</code></pre>
+<p>If you wish to remove a particular value or variable, we can use the <code>NULL</code> symbol:</p>
+<pre class="r"><code>deck2$newvar &lt;- NULL
+head(deck2)</code></pre>
+<pre><code>##     face     suit value
+## 47   six   hearts     6
+## 13   ace   spades     1
+## 39   ace diamonds     1
+## 19 eight    clubs     8
+## 4    ten   spades    10
+## 24 three    clubs     3</code></pre>
+<p>Now let’s try something slightly more complex. We know that aces in poker are generally considered to be of the highest value, so their values should not just be 1. Instead, we should assign them a value that is greater than 13, say 14. In the original deck, it is not very difficult to do as you know exactly where each ace appears:</p>
+<pre class="r"><code>deck$value[c(13, 26, 39, 52)]</code></pre>
+<pre><code>## [1] 1 1 1 1</code></pre>
+<pre class="r"><code>deck$value[c(13, 26, 39, 52)] &lt;- c(14, 14, 14, 14)
+deck$value[c(13, 26, 39, 52)]</code></pre>
+<pre><code>## [1] 14 14 14 14</code></pre>
+<p>However in the shuffled deck, it is not as easy, since we do not really know where the aces are. As a result, we need to replace values <strong>conditional</strong> on their faces being aces. To do this, we can make use of the <code>==</code> syntax, which is R’s way to test equality. Do not confuse this with <code>&lt;-</code>, which is the operator for assigning objects.</p>
+<pre class="r"><code>deck2$value[deck2$face == &quot;ace&quot;] &lt;- 14
+deck2[deck2$face == &quot;ace&quot;, ]</code></pre>
+<pre><code>##    face     suit value
+## 13  ace   spades    14
+## 39  ace diamonds    14
+## 26  ace    clubs    14
+## 52  ace   hearts    14</code></pre>
+<p>Once you understand the logic of these operations, it is very easy to make up your own “conditions”. There are other symbols like <code>&amp;</code>, <code>!</code> and <code>|</code> that can be very useful when you make up conditions, and we will surely be using them later on in the course.</p>
 </div>
 </div>
 
