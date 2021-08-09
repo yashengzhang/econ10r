@@ -432,3 +432,182 @@ dim(deck3)
 ```
 
 The new data frame `deck3` has observations removed if they have a missing value.
+
+With these basic tools of value modification in hand, we can move on to deal with more complicated data. Before that, let us take a step back and talk about packages and libraries in R.
+
+# Installing Packages and Loading Libraries
+
+So far we have used only very basic commands in R. In order to use more advanced and convenient commands, we sometimes need to install packages. Packages are collections of functions, data and documentation in R that greatly extend R's basic capabilities. Here let us look at a very useful package called `tidyverse`. It is more like a collection of packages, and makes cleaning data a lot easier.
+
+Before we can use anything from `tidyverse`, we will need to install it. This is because some functions of `tidyverse` is not included in the basic R. To install `tidyverse` (and other packages in general), we can use the following command:
+
+```{r eval=FALSE, include=TRUE}
+install.packages("tidyverse", type = "binary")
+```
+
+THe installation might take a while, and you may need to respond to some prompts. You may see some errors in the process. But as long as you see the package downloaded (it should end with a line `The downloaded source packages are in`), then do not worry too much about it. We will deal with it later if we encounter problems.
+
+Now that we have the package installed, you can exclude it from your codes, as you do not need (or want) to install it everytime you run the codes - it just needs to be installed once.
+
+After successful installation, we need to load the relevant functions in order to use them. To do so we can do the following:
+
+```{r}
+library(tidyverse)
+```
+
+Generally you only need to load the library once as well. However loading library does not take a long time so you can keep it in the code if you want. For the conflicts you might see, this is because some functions in `tidyverse` share the same name as basic functions in R. If you want to use the base functions of R, you need to write `stats::filter()` instead of `filter()`, as the function with the same name from `tidyverse` is masking the base function.
+
+We can install other packages and load other libraries in a similar way. Having learned the codes, let us move back to data.
+
+# Data Transformation and Visualization
+
+To learn more about how to clean and visualize data, we need to use a more complicated data set. Let us load the following library:
+
+```{r eval=FALSE, include=TRUE}
+install.packages("nycflights13")
+```
+
+```{r}
+library(nycflights13)
+```
+
+
+
+This loads a dataset on flights departing New York City in 2013. Let us load the data as a data frame:
+
+```{r}
+nycflights13::flights
+```
+
+We can see that this dataset is a lot more complex than `deck`. It has 336,776 observations, each with 19 variables. This dataset contains variables of many different natures. Some of them are integers, denoted by `int`, some are character strings, denoted by `chr`, et cetera. Now let us mess around with the data a little bit.
+
+## Filter
+
+We already learned how to select certain observations from a dataset. However, it is usually the case that this is more than one way to do the same thing. Here we can make sure of the `filter` command to do the same thing in a simpler way. Suppose we wish to select all the flights on the day of Jan 1st:
+
+```{r}
+filter(flights, month == 1, day == 1)
+```
+
+Now only flights from Jan 1st appears and the sample size shrinks to 842, a good start. Comparing to using `[]` to subset the data, `filter` is a little bit more intuitive and can do things more easily. Right now we only have the data shown to us but not stored in objects, so to do that, we can assign the selected data to a new data frame:
+
+```{r}
+jan1 <- filter(flights, month == 1, day == 1)
+```
+
+You can easily click it in the environment and view it. There are other comparison operators you can use to filter the data. For example, if you wish to include flights in November or December, we can write:
+
+```{r}
+filter(flights, month == 11 | month == 12)
+```
+
+If you wish to find flights that had a delay (both arrival and departure) of no more than two hours, you can write the following:
+
+```{r}
+filter(flights, arr_delay <= 120, dep_delay <= 120)
+```
+
+Looks like the sample size did not shrink a lot, but no more than two hours is a pretty slack condition. Alternatively, we can achieve the same thing with the following command:
+
+```{r}
+filter(flights, !(arr_delay > 120 | dep_delay > 120))
+```
+
+The operator `!` means "not something". Remember that `arr_delay > 120 | dep_delay > 120` means arrival delay of more than two hours **or** departure delays of more than two hours. Adding `!` excludes all that, so logically it means the same thing as `arr_delay <= 120, dep_delay <= 120`. To sum up, apart from standard notations like `>`, `<`, `>=`, `<=`, `==`, operators like `,` (and), `!` (not) and `|` (or) can also be very useful when setting filtering conditions.
+
+## Arrange
+
+You can arrange rows by variables. For example, if you wish to sort the flights by year-month-day, we can do the following:
+
+```{r}
+arrange(flights, year, month, day)
+```
+In our data this does not change much as this is the original way the dataset was arranged. R defaults to sorting by ascending order, but you can switch to descending order if you wish by doing this:
+
+```{r}
+arrange(flights, desc(dep_delay))
+```
+
+By default, missing values (`NA`) are always sorted at the end. It is always worth remembering that none of the above arrangement is really saved unless you assign the output into a new data frame.
+
+## Select
+
+When you want to select just a few variables out of potential hundreds, you can use the `select`:
+
+```{r}
+select(flights, year, month, day)
+```
+
+We now have 336,776 observations but only three variables. The sample size shrank a lot. The `select` command is very useful for truncating datasets if you just want to get rid of certain variables. There are other options you can use. For example, you can pick all the variables between year and day (inclusive) by doing the following:
+
+```{r}
+select(flights, year:day)
+```
+
+You can also exclude all the variables between year and day (inclusive):
+
+```{r}
+select(flights, -(year:day))
+```
+
+There are other conditions that you can set. For example, using `starts_with("abc")` will select all variables that start with `abc`, `ends_with("xyz")` and `contains("efg")` work similarly. There are even more options that you can easily google up.
+
+## Mutate
+
+You will often come across situations where you wish to create a new variable that is a function of existing variables. This is where we can use the `mutate` option. Let us take a look. First we will create a dataset with fewer variables so that it is easy to see everything.
+
+```{r}
+flights_short <- select(flights, 
+                        year:day,
+                        ends_with("delay"),
+                        distance,
+                        air_time)
+```
+
+Now suppose we want to know the time gained in air (delay time minus arrival time) and the average speed of the flight:
+
+```{r}
+mutate(flights_short,
+       gain = dep_delay - arr_delay,
+       speed = distance / air_time * 60)
+```
+
+Two new variables are created and amended to the end of the data frame. You can create other variables in similar fashion, and there are also many operations you can do on existing variables that can generate new variables (e.g., leads and lags). Obviously we cannot cover everything here, but learning how to add variables in an important first step.
+
+## Summarize
+
+Sometimes the unit of observation is too small or too detailed for your purpose (yes, that can happen). In those cases, You will want to collapse a set of rows into a single row. For example, it is very tedious to analyze every single flight in the data frame, so maybe we will want to look at the data day by day. What we can do is to take the average of the flights of a day. For example, to get the average delay per date:
+
+```{r}
+by_day <- group_by(flights, year, month, day)
+summarise(by_day, count = n(), delay = mean(dep_delay, na.rm = TRUE))
+```
+
+First, we used `group_by` to change the unit of analysis to each date (think about what would happen if I leave out "year" and "month"), so the `by_day` dataset has the same observation but with a different unit of analysis. Then I collapsed the data by date and got the average departure delay. The command `summarise` does the collapsing for us. Also note that we applied `na.rm = TRUE` so that we ignore all missing values. Try on your own what would happen if we do not use this option.
+
+I included a new variable called `count = n()` here. This gives you the number of observations that you are doing your operation (in our case, `mean()`) on. So for example, on January 1st, we are averaging the delay for 842 flights. This number is not very useful to use right now, but in cases where the number of observations in a group is small enough to affect the outcome, knowing the number would be useful. We will come across examples in the future.
+
+If you wish to ungroup a dataset, simply apply:
+
+```{r}
+ungroup(by_day)
+```
+
+## Group Mutates and Filters
+
+You can also use the `group_by` function to mutate the data frame. For example, suppose we wish to find the worst offenders of arrival delays by day, we can do the following:
+
+```{r}
+flights_short <- group_by(flights_short, year, month, day)
+flights_short <- filter(flights_short, rank(desc(arr_delay)) <= 10)
+flights_short
+```
+
+Now what do we have? We picked out the top 10 worst delays for each day. We can also find all groups bigger or less than a threshold:
+
+```{r}
+popular_dest <- filter(group_by(flights, dest), n() > 365)
+popular_dest
+```
+
+What is this? We first changed the unit of analysis to each destination. Then we kept all the flights which have a destination that has on average more than 1 flight per day from New York and deleted the rest. Note that I incorporated the `group_by` function under `filter`, saving an extra step compared to the previous code where we were finding the worst delays by day.

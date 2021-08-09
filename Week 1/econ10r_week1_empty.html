@@ -194,7 +194,7 @@ die</code></pre>
 <p>You can also do operations on R objects just like numbers. We also saw that you can add 1 to the object <code>a</code>. You can do the same thing for the object <code>die</code>. However, without further specification, R will assume the operation is pairwise (element-wise) - it will apply the operation to each element in the object. Let us look at an example:</p>
 <pre class="r"><code>a &lt;- 1
 die &lt;- 1:6
-die+1</code></pre>
+die + 1</code></pre>
 <pre><code>## [1] 2 3 4 5 6 7</code></pre>
 <p>We can see that each element in <code>die</code> increased by 1. If you multiply <code>die</code> with <code>die</code>, instead of returning a six by six matrix, it will return a vector of the same dimension after element-wise operation:</p>
 <pre class="r"><code>die * die</code></pre>
@@ -230,7 +230,7 @@ text</code></pre>
 <pre><code>## [1] &quot;32&quot;      &quot;Olympic&quot; &quot;Games&quot;</code></pre>
 <p>Notice that the number <code>32</code> can also be a character. A simple rule is that when R displays something with quotation mark around them, then they are character strings rather than numbers.</p>
 <p>One last thing I want to emphasize is the logical operators. Whenever you use or see <code>TRUE</code> and <code>FALSE</code> without quotation marks, they act as logical operators. For example:</p>
-<pre class="r"><code>1+1&gt;2</code></pre>
+<pre class="r"><code>1 + 1 &gt; 2</code></pre>
 <pre><code>## [1] FALSE</code></pre>
 <p>So we are told that 1+1 is not greater than 2 by R. What a surprise. These two logical operators are very important later on in the course, when you have to specify whether to enable or disable certain option. We will see in another example later.</p>
 </div>
@@ -248,7 +248,7 @@ names(die)</code></pre>
 <pre><code>##   one   two three  four  five   six 
 ##     1     2     3     4     5     6</code></pre>
 <p>To emphasize that names are basically just labels, we can do the following:</p>
-<pre class="r"><code>die+1</code></pre>
+<pre class="r"><code>die + 1</code></pre>
 <pre><code>##   one   two three  four  five   six 
 ##     2     3     4     5     6     7</code></pre>
 <p>As you can see, the names correspond to the values only as labels, and are not related to the nature of the values.</p>
@@ -290,8 +290,9 @@ list1</code></pre>
 <div id="data-frame" class="section level2" number="1.5">
 <h2 number="1.5"><span class="header-section-number">1.5</span> Data Frame</h2>
 <p>Data frame is one of, if not the, most powerful way to store data in R. You can think of a data frame as an Excel spreadsheet as they are both two dimensional. A vector will become a column in a data frame. We can create a simple data frame by hand to see how it works:</p>
-<pre class="r"><code>df &lt;- data.frame(face = c(&quot;ace&quot;, &quot;two&quot;, &quot;six&quot;),  
-  suit = c(&quot;clubs&quot;, &quot;clubs&quot;, &quot;clubs&quot;), value = c(1, 2, 6))
+<pre class="r"><code>df &lt;- data.frame(face = c(&quot;ace&quot;, &quot;two&quot;, &quot;six&quot;),
+                 suit = c(&quot;clubs&quot;, &quot;clubs&quot;, &quot;clubs&quot;),
+                 value = c(1, 2, 6))
 df</code></pre>
 <pre><code>##   face  suit value
 ## 1  ace clubs     1
@@ -310,7 +311,7 @@ df2</code></pre>
 </div>
 <div id="loading-and-saving-data" class="section level2" number="1.6">
 <h2 number="1.6"><span class="header-section-number">1.6</span> Loading and Saving Data</h2>
-<p>Creating data frames by hand is not practical if you have even just a little bit more data. Not only is it too time consuming, but you will inevitably make typos and mistakes. Moreoever, the data we analyze are usualy from external sources. It is then only natural to learn how to load downloaded data into R, deal with them, and then save them as an output.</p>
+<p>Creating data frames by hand is not practical if you have even just a little bit more data. Not only is it too time consuming, but you will inevitably make typos and mistakes. Moreover, the data we analyze are usually from external sources. It is then only natural to learn how to load downloaded data into R, deal with them, and then save them as an output.</p>
 <p>We downloaded the <code>deck.csv</code> from the HOP textbook. Let’s try and load it. First, to simplify your task, just put the file under the same folder as your <code>Rmd</code> file. Then we can read the data with the following command:</p>
 <pre class="r"><code>read.csv(&quot;deck.csv&quot;)</code></pre>
 <pre><code>##     face     suit value
@@ -386,23 +387,17 @@ df2</code></pre>
 <pre class="r"><code>deck[1, ]</code></pre>
 <pre><code>##   face   suit value
 ## 1 king spades    13</code></pre>
-<pre class="r"><code>deck[1, c(1:3)]</code></pre>
+<pre class="r"><code>deck[1, c(&quot;face&quot;, &quot;suit&quot;, &quot;value&quot;)]</code></pre>
 <pre><code>##   face   suit value
 ## 1 king spades    13</code></pre>
-<pre class="r"><code>deck[1, c(&quot;face&quot;, &quot;suit&quot;, &quot;value&quot;)]</code></pre>
+<pre class="r"><code>deck[1, c(1:3)]</code></pre>
 <pre><code>##   face   suit value
 ## 1 king spades    13</code></pre>
 <p>All three commands return the same thing. If you wish to ignore a particular column or row, you can simply drop it from the selection:</p>
 <pre class="r"><code>deck[1, c(1:2)]</code></pre>
 <pre><code>##   face   suit
 ## 1 king spades</code></pre>
-<pre class="r"><code>deck[1, c(1, 3)]</code></pre>
-<pre><code>##   face value
-## 1 king    13</code></pre>
 <p>You can also do the same thing with a negative sign:</p>
-<pre class="r"><code>deck[1, c(1:2)]</code></pre>
-<pre><code>##   face   suit
-## 1 king spades</code></pre>
 <pre class="r"><code>deck[1, -3]</code></pre>
 <pre><code>##   face   suit
 ## 1 king spades</code></pre>
@@ -470,7 +465,7 @@ df2</code></pre>
 deal(deck)</code></pre>
 <pre><code>##   face   suit value
 ## 1 king spades    13</code></pre>
-<p>However, if you run this function over and over, it will keep returning the king of spades to you. This is because neither does r know that king of spades should be taken away aftering being selected, nor do we shuffle the deck afterwards. It is more difficult to do the former, so let’s try the latter for now.</p>
+<p>However, if you run this function over and over, it will keep returning the king of spades to you. This is because neither does R know that king of spades should be taken away after being selected, nor do we shuffle the deck afterwards. It is more difficult to do the former, so let’s try the latter for now.</p>
 </div>
 <div id="shuffle-cards-with-functions" class="section level2" number="2.3">
 <h2 number="2.3"><span class="header-section-number">2.3</span> Shuffle Cards with Functions</h2>
@@ -532,64 +527,64 @@ deal(deck)</code></pre>
 <p>This is simple: I wrote down specifically the order of the rows (row 2 first, row 1 second, and then 3 to 52), and left the column blank so every column is included. This is no where near random shuffling. However, this gives us a hint: as long as we can randomly order the 52 rows, we can assign the new order to the deck and have it shuffled. To do so, we use the following command:</p>
 <pre class="r"><code>random &lt;- sample(1:52, size = 52)
 random</code></pre>
-<pre><code>##  [1] 23  4 27  1 42 11 39 12 10 13 22 14 18 51 40 15 29 34 24  9 17 19 46  2 38
-## [26] 48 36  6 28  7 31 49 44 25 32 37 35 30 16 45 52 47  3 50 41 20 33 43  8  5
-## [51] 26 21</code></pre>
+<pre><code>##  [1] 32 29 18 39 27 14 33 40 50 19 13 47 45 26 41  3  9  8 44 31 48 15 37 12 22
+## [26]  1 20 21 35 24 16 38 11 17  6 49 23 46 30 36 34  2 28  5 52 51 25  4  7 43
+## [51] 10 42</code></pre>
 <p>And let’s apply this new order to the deck:</p>
 <pre class="r"><code>deck[random, ]</code></pre>
 <pre><code>##     face     suit value
-## 23  four    clubs     4
-## 4    ten   spades    10
-## 27  king diamonds    13
-## 1   king   spades    13
-## 42  jack   hearts    11
-## 11 three   spades     3
-## 39   ace diamonds     1
-## 12   two   spades     2
-## 10  four   spades     4
-## 13   ace   spades     1
-## 22  five    clubs     5
-## 14  king    clubs    13
-## 18  nine    clubs     9
-## 51   two   hearts     2
-## 40  king   hearts    13
-## 15 queen    clubs    12
-## 29  jack diamonds    11
-## 34   six diamonds     6
-## 24 three    clubs     3
-## 9   five   spades     5
-## 17   ten    clubs    10
-## 19 eight    clubs     8
-## 46 seven   hearts     7
-## 2  queen   spades    12
-## 38   two diamonds     2
-## 48  five   hearts     5
-## 36  four diamonds     4
-## 6  eight   spades     8
-## 28 queen diamonds    12
-## 7  seven   spades     7
-## 31  nine diamonds     9
-## 49  four   hearts     4
-## 44  nine   hearts     9
-## 25   two    clubs     2
 ## 32 eight diamonds     8
-## 37 three diamonds     3
-## 35  five diamonds     5
-## 30   ten diamonds    10
-## 16  jack    clubs    11
-## 45 eight   hearts     8
-## 52   ace   hearts     1
-## 47   six   hearts     6
-## 3   jack   spades    11
-## 50 three   hearts     3
-## 41 queen   hearts    12
-## 20 seven    clubs     7
+## 29  jack diamonds    11
+## 18  nine    clubs     9
+## 39   ace diamonds     1
+## 27  king diamonds    13
+## 14  king    clubs    13
 ## 33 seven diamonds     7
-## 43   ten   hearts    10
-## 8    six   spades     6
-## 5   nine   spades     9
+## 40  king   hearts    13
+## 50 three   hearts     3
+## 19 eight    clubs     8
+## 13   ace   spades     1
+## 47   six   hearts     6
+## 45 eight   hearts     8
 ## 26   ace    clubs     1
-## 21   six    clubs     6</code></pre>
+## 41 queen   hearts    12
+## 3   jack   spades    11
+## 9   five   spades     5
+## 8    six   spades     6
+## 44  nine   hearts     9
+## 31  nine diamonds     9
+## 48  five   hearts     5
+## 15 queen    clubs    12
+## 37 three diamonds     3
+## 12   two   spades     2
+## 22  five    clubs     5
+## 1   king   spades    13
+## 20 seven    clubs     7
+## 21   six    clubs     6
+## 35  five diamonds     5
+## 24 three    clubs     3
+## 16  jack    clubs    11
+## 38   two diamonds     2
+## 11 three   spades     3
+## 17   ten    clubs    10
+## 6  eight   spades     8
+## 49  four   hearts     4
+## 23  four    clubs     4
+## 46 seven   hearts     7
+## 30   ten diamonds    10
+## 36  four diamonds     4
+## 34   six diamonds     6
+## 2  queen   spades    12
+## 28 queen diamonds    12
+## 5   nine   spades     9
+## 52   ace   hearts     1
+## 51   two   hearts     2
+## 25   two    clubs     2
+## 4    ten   spades    10
+## 7  seven   spades     7
+## 43   ten   hearts    10
+## 10  four   spades     4
+## 42  jack   hearts    11</code></pre>
 <p>Now we can shuffle and create a new deck using a <code>shuffle</code> function:</p>
 <pre class="r"><code>shuffle &lt;- function(x){
   random &lt;- sample(1:52, size = 52)
@@ -598,72 +593,72 @@ random</code></pre>
 deck2 &lt;- shuffle(deck)
 deck2</code></pre>
 <pre><code>##     face     suit value
-## 1   king   spades    13
-## 41 queen   hearts    12
-## 9   five   spades     5
-## 5   nine   spades     9
-## 6  eight   spades     8
-## 42  jack   hearts    11
-## 19 eight    clubs     8
-## 46 seven   hearts     7
-## 4    ten   spades    10
-## 14  king    clubs    13
-## 2  queen   spades    12
-## 15 queen    clubs    12
-## 17   ten    clubs    10
-## 50 three   hearts     3
-## 33 seven diamonds     7
-## 44  nine   hearts     9
-## 11 three   spades     3
-## 24 three    clubs     3
-## 48  five   hearts     5
-## 10  four   spades     4
-## 23  four    clubs     4
-## 37 three diamonds     3
-## 7  seven   spades     7
-## 32 eight diamonds     8
-## 25   two    clubs     2
-## 27  king diamonds    13
-## 51   two   hearts     2
-## 38   two diamonds     2
-## 31  nine diamonds     9
-## 26   ace    clubs     1
-## 21   six    clubs     6
-## 29  jack diamonds    11
-## 8    six   spades     6
-## 18  nine    clubs     9
-## 30   ten diamonds    10
-## 40  king   hearts    13
-## 52   ace   hearts     1
-## 49  four   hearts     4
-## 45 eight   hearts     8
-## 28 queen diamonds    12
-## 3   jack   spades    11
-## 34   six diamonds     6
-## 35  five diamonds     5
-## 39   ace diamonds     1
-## 13   ace   spades     1
-## 20 seven    clubs     7
-## 12   two   spades     2
 ## 47   six   hearts     6
-## 16  jack    clubs    11
-## 22  five    clubs     5
+## 19 eight    clubs     8
+## 48  five   hearts     5
+## 38   two diamonds     2
+## 15 queen    clubs    12
+## 29  jack diamonds    11
+## 41 queen   hearts    12
+## 21   six    clubs     6
+## 34   six diamonds     6
+## 9   five   spades     5
+## 37 three diamonds     3
+## 33 seven diamonds     7
+## 17   ten    clubs    10
+## 46 seven   hearts     7
+## 3   jack   spades    11
+## 45 eight   hearts     8
+## 1   king   spades    13
 ## 36  four diamonds     4
-## 43   ten   hearts    10</code></pre>
+## 12   two   spades     2
+## 18  nine    clubs     9
+## 14  king    clubs    13
+## 4    ten   spades    10
+## 50 three   hearts     3
+## 20 seven    clubs     7
+## 39   ace diamonds     1
+## 31  nine diamonds     9
+## 43   ten   hearts    10
+## 40  king   hearts    13
+## 2  queen   spades    12
+## 26   ace    clubs     1
+## 16  jack    clubs    11
+## 13   ace   spades     1
+## 7  seven   spades     7
+## 44  nine   hearts     9
+## 35  five diamonds     5
+## 42  jack   hearts    11
+## 24 three    clubs     3
+## 25   two    clubs     2
+## 32 eight diamonds     8
+## 49  four   hearts     4
+## 28 queen diamonds    12
+## 23  four    clubs     4
+## 51   two   hearts     2
+## 10  four   spades     4
+## 30   ten diamonds    10
+## 5   nine   spades     9
+## 52   ace   hearts     1
+## 8    six   spades     6
+## 22  five    clubs     5
+## 11 three   spades     3
+## 6  eight   spades     8
+## 27  king diamonds    13</code></pre>
 <p>Now we can deal and get a different card:</p>
 <pre class="r"><code>deal(deck2)</code></pre>
+<pre><code>##    face   suit value
+## 47  six hearts     6</code></pre>
+<p>We can even combine the two steps and skip the creating of a new data frame (deck2):</p>
+<pre class="r"><code>deal(shuffle(deck))</code></pre>
+<pre><code>##     face   suit value
+## 50 three hearts     3</code></pre>
+<pre class="r"><code>deal(shuffle(deck))</code></pre>
 <pre><code>##   face   suit value
-## 1 king spades    13</code></pre>
-<p>We can even combine the two steps and skip the creationg of a new data frame (deck2):</p>
+## 4  ten spades    10</code></pre>
 <pre class="r"><code>deal(shuffle(deck))</code></pre>
-<pre><code>##     face     suit value
-## 33 seven diamonds     7</code></pre>
-<pre class="r"><code>deal(shuffle(deck))</code></pre>
-<pre><code>##     face  suit value
-## 19 eight clubs     8</code></pre>
-<pre class="r"><code>deal(shuffle(deck))</code></pre>
-<pre><code>##     face  suit value
-## 20 seven clubs     7</code></pre>
+<pre><code>##     face   suit value
+## 41 queen hearts    12</code></pre>
 <p>You can see that we have different result every time. True shuffling it is.</p>
 </div>
 <div id="dollar-sign" class="section level2" number="2.4">
@@ -680,10 +675,11 @@ deck2</code></pre>
 <pre class="r"><code>mean(deck$value)</code></pre>
 <pre><code>## [1] 7</code></pre>
 <p>For lists, we can do the same:</p>
-<pre class="r"><code>names(list1) &lt;- c(&quot;One&quot;, &quot;Two&quot;, &quot;Three&quot;)
-list1$One</code></pre>
-<pre><code>##   one   two three  four  five   six 
-##     1     2     3     4     5     6</code></pre>
+<pre class="r"><code>names(list1) &lt;- c(&quot;Die&quot;, &quot;Matrix&quot;, &quot;Text&quot;)
+list1$Matrix</code></pre>
+<pre><code>##      [,1] [,2] [,3]
+## [1,]    1    2    3
+## [2,]    4    5    6</code></pre>
 </div>
 </div>
 <div id="modifying-values-in-r" class="section level1" number="3">
@@ -692,230 +688,20 @@ list1$One</code></pre>
 <div id="changing-values" class="section level2" number="3.1">
 <h2 number="3.1"><span class="header-section-number">3.1</span> Changing values</h2>
 <p>Let us use the <code>die</code> vector as examples. Suppose we want to change the first value in <code>die</code> to 1000, we can use the following command:</p>
-<pre class="r"><code>die[1] &lt;- 1000
-die</code></pre>
-<pre><code>##   one   two three  four  five   six 
-##  1000     2     3     4     5     6</code></pre>
 <p>You can also replace a group of values:</p>
-<pre class="r"><code>die[c(1, 3, 5)] &lt;- c(1000, 3000, 5000)
-die</code></pre>
-<pre><code>##   one   two three  four  five   six 
-##  1000     2  3000     4  5000     6</code></pre>
 <p>And doing certain operations on a group of values:</p>
-<pre class="r"><code>die[c(2, 4, 6)] &lt;- die[c(2, 4, 6)] + 1
-die</code></pre>
-<pre><code>##   one   two three  four  five   six 
-##  1000     3  3000     5  5000     7</code></pre>
 <p>You can add observations by directly adding values. For example, the <code>die</code> vector used to have only 6 values, but now we can add a seventh one:</p>
-<pre class="r"><code>die[7] &lt;- 0
-die</code></pre>
-<pre><code>##   one   two three  four  five   six       
-##  1000     3  3000     5  5000     7     0</code></pre>
 <p>You can also add a new variable to a data frame in the same way, remember to use the dollar sign:</p>
-<pre class="r"><code>deck2$newvar &lt;- c(1)
-head(deck2)</code></pre>
-<pre><code>##     face   suit value newvar
-## 1   king spades    13      1
-## 41 queen hearts    12      1
-## 9   five spades     5      1
-## 5   nine spades     9      1
-## 6  eight spades     8      1
-## 42  jack hearts    11      1</code></pre>
 <p>If you wish to remove a particular value or variable, we can use the <code>NULL</code> symbol:</p>
-<pre class="r"><code>deck2$newvar &lt;- NULL
-head(deck2)</code></pre>
-<pre><code>##     face   suit value
-## 1   king spades    13
-## 41 queen hearts    12
-## 9   five spades     5
-## 5   nine spades     9
-## 6  eight spades     8
-## 42  jack hearts    11</code></pre>
 <p>Now let’s try something slightly more complex. We know that aces in poker are generally considered to be of the highest value, so their values should not just be 1. Instead, we should assign them a value that is greater than 13, say 14. In the original deck, it is not very difficult to do as you know exactly where each ace appears:</p>
-<pre class="r"><code>deck$value[c(13, 26, 39, 52)]</code></pre>
-<pre><code>## [1] 1 1 1 1</code></pre>
-<pre class="r"><code>deck$value[c(13, 26, 39, 52)] &lt;- c(14, 14, 14, 14)
-deck$value[c(13, 26, 39, 52)]</code></pre>
-<pre><code>## [1] 14 14 14 14</code></pre>
 <p>However in the shuffled deck, it is not as easy, since we do not really know where the aces are. As a result, we need to replace values <strong>conditional</strong> on their faces being aces. To do this, we can make use of the <code>==</code> syntax, which is R’s way to test equality. Do not confuse this with <code>&lt;-</code>, which is the operator for assigning objects.</p>
-<pre class="r"><code>deck2$value[deck2$face == &quot;ace&quot;] &lt;- 14
-deck2[deck2$face == &quot;ace&quot;, ]</code></pre>
-<pre><code>##    face     suit value
-## 26  ace    clubs    14
-## 52  ace   hearts    14
-## 39  ace diamonds    14
-## 13  ace   spades    14</code></pre>
 <p>Once you understand the logic of these operations, it is very easy to make up your own “conditions”. There are other symbols like <code>&amp;</code>, <code>!</code> and <code>|</code> that can be very useful when you make up conditions, and we will surely be using them later on in the course.</p>
 </div>
 <div id="dealing-with-missing-values" class="section level2" number="3.2">
 <h2 number="3.2"><span class="header-section-number">3.2</span> Dealing with Missing Values</h2>
 <p>As a data scientist, dealing with missing values is our bread and butter. As an economist, it is even more so as economic data are never perfect. Usually the first step you complete after loading the data is to check for missing data and, if appropriate, remove them. Let me first generate some missing values:</p>
-<pre class="r"><code>random2 &lt;- sample(1:52, size = 5)
-random2</code></pre>
-<pre><code>## [1] 45  4  1 13 18</code></pre>
-<pre class="r"><code>deck2$value[c(random2)] &lt;- c(NA, NA, NA, NA, NA)
-deck2</code></pre>
-<pre><code>##     face     suit value
-## 1   king   spades    NA
-## 41 queen   hearts    12
-## 9   five   spades     5
-## 5   nine   spades    NA
-## 6  eight   spades     8
-## 42  jack   hearts    11
-## 19 eight    clubs     8
-## 46 seven   hearts     7
-## 4    ten   spades    10
-## 14  king    clubs    13
-## 2  queen   spades    12
-## 15 queen    clubs    12
-## 17   ten    clubs    NA
-## 50 three   hearts     3
-## 33 seven diamonds     7
-## 44  nine   hearts     9
-## 11 three   spades     3
-## 24 three    clubs    NA
-## 48  five   hearts     5
-## 10  four   spades     4
-## 23  four    clubs     4
-## 37 three diamonds     3
-## 7  seven   spades     7
-## 32 eight diamonds     8
-## 25   two    clubs     2
-## 27  king diamonds    13
-## 51   two   hearts     2
-## 38   two diamonds     2
-## 31  nine diamonds     9
-## 26   ace    clubs    14
-## 21   six    clubs     6
-## 29  jack diamonds    11
-## 8    six   spades     6
-## 18  nine    clubs     9
-## 30   ten diamonds    10
-## 40  king   hearts    13
-## 52   ace   hearts    14
-## 49  four   hearts     4
-## 45 eight   hearts     8
-## 28 queen diamonds    12
-## 3   jack   spades    11
-## 34   six diamonds     6
-## 35  five diamonds     5
-## 39   ace diamonds    14
-## 13   ace   spades    NA
-## 20 seven    clubs     7
-## 12   two   spades     2
-## 47   six   hearts     6
-## 16  jack    clubs    11
-## 22  five    clubs     5
-## 36  four diamonds     4
-## 43   ten   hearts    10</code></pre>
 <p>Now we can see that <code>deck2</code> have 5 <code>NA</code> (missing value) under the variable <code>value</code>. Now suppose that this deck is not for poker, just a random dataset that you have. Also assume that the missing values are random (it indeed is, as I generated the missing values randomly), we can then drop them in order to continue our analysis. We can check what values are missing by using the <code>is.na</code> option:</p>
-<pre class="r"><code>is.na(deck2)</code></pre>
-<pre><code>##     face  suit value
-## 1  FALSE FALSE  TRUE
-## 41 FALSE FALSE FALSE
-## 9  FALSE FALSE FALSE
-## 5  FALSE FALSE  TRUE
-## 6  FALSE FALSE FALSE
-## 42 FALSE FALSE FALSE
-## 19 FALSE FALSE FALSE
-## 46 FALSE FALSE FALSE
-## 4  FALSE FALSE FALSE
-## 14 FALSE FALSE FALSE
-## 2  FALSE FALSE FALSE
-## 15 FALSE FALSE FALSE
-## 17 FALSE FALSE  TRUE
-## 50 FALSE FALSE FALSE
-## 33 FALSE FALSE FALSE
-## 44 FALSE FALSE FALSE
-## 11 FALSE FALSE FALSE
-## 24 FALSE FALSE  TRUE
-## 48 FALSE FALSE FALSE
-## 10 FALSE FALSE FALSE
-## 23 FALSE FALSE FALSE
-## 37 FALSE FALSE FALSE
-## 7  FALSE FALSE FALSE
-## 32 FALSE FALSE FALSE
-## 25 FALSE FALSE FALSE
-## 27 FALSE FALSE FALSE
-## 51 FALSE FALSE FALSE
-## 38 FALSE FALSE FALSE
-## 31 FALSE FALSE FALSE
-## 26 FALSE FALSE FALSE
-## 21 FALSE FALSE FALSE
-## 29 FALSE FALSE FALSE
-## 8  FALSE FALSE FALSE
-## 18 FALSE FALSE FALSE
-## 30 FALSE FALSE FALSE
-## 40 FALSE FALSE FALSE
-## 52 FALSE FALSE FALSE
-## 49 FALSE FALSE FALSE
-## 45 FALSE FALSE FALSE
-## 28 FALSE FALSE FALSE
-## 3  FALSE FALSE FALSE
-## 34 FALSE FALSE FALSE
-## 35 FALSE FALSE FALSE
-## 39 FALSE FALSE FALSE
-## 13 FALSE FALSE  TRUE
-## 20 FALSE FALSE FALSE
-## 12 FALSE FALSE FALSE
-## 47 FALSE FALSE FALSE
-## 16 FALSE FALSE FALSE
-## 22 FALSE FALSE FALSE
-## 36 FALSE FALSE FALSE
-## 43 FALSE FALSE FALSE</code></pre>
 <p>Clearly, we have a few missing values under the variable <code>value</code> as expected. R told us this by showing <code>TRUE</code> whenever there is a missing value. Now let’s remove the missing values for good. Remember that we will be dropping <strong>observations</strong> that have missing values, not just dropping the missing values. Therefore, cards without a <code>value</code> will be dropped even if they still have their <code>face</code> and <code>suit</code> non-missing. Again, you do not want to mess up the original data frame as you can make mistakes, so let us create a new data frame which contains the non-missing observations.</p>
-<pre class="r"><code>deck3 &lt;- na.omit(deck2)
-is.na(deck3)</code></pre>
-<pre><code>##     face  suit value
-## 41 FALSE FALSE FALSE
-## 9  FALSE FALSE FALSE
-## 6  FALSE FALSE FALSE
-## 42 FALSE FALSE FALSE
-## 19 FALSE FALSE FALSE
-## 46 FALSE FALSE FALSE
-## 4  FALSE FALSE FALSE
-## 14 FALSE FALSE FALSE
-## 2  FALSE FALSE FALSE
-## 15 FALSE FALSE FALSE
-## 50 FALSE FALSE FALSE
-## 33 FALSE FALSE FALSE
-## 44 FALSE FALSE FALSE
-## 11 FALSE FALSE FALSE
-## 48 FALSE FALSE FALSE
-## 10 FALSE FALSE FALSE
-## 23 FALSE FALSE FALSE
-## 37 FALSE FALSE FALSE
-## 7  FALSE FALSE FALSE
-## 32 FALSE FALSE FALSE
-## 25 FALSE FALSE FALSE
-## 27 FALSE FALSE FALSE
-## 51 FALSE FALSE FALSE
-## 38 FALSE FALSE FALSE
-## 31 FALSE FALSE FALSE
-## 26 FALSE FALSE FALSE
-## 21 FALSE FALSE FALSE
-## 29 FALSE FALSE FALSE
-## 8  FALSE FALSE FALSE
-## 18 FALSE FALSE FALSE
-## 30 FALSE FALSE FALSE
-## 40 FALSE FALSE FALSE
-## 52 FALSE FALSE FALSE
-## 49 FALSE FALSE FALSE
-## 45 FALSE FALSE FALSE
-## 28 FALSE FALSE FALSE
-## 3  FALSE FALSE FALSE
-## 34 FALSE FALSE FALSE
-## 35 FALSE FALSE FALSE
-## 39 FALSE FALSE FALSE
-## 20 FALSE FALSE FALSE
-## 12 FALSE FALSE FALSE
-## 47 FALSE FALSE FALSE
-## 16 FALSE FALSE FALSE
-## 22 FALSE FALSE FALSE
-## 36 FALSE FALSE FALSE
-## 43 FALSE FALSE FALSE</code></pre>
-<pre class="r"><code>dim(deck3)</code></pre>
-<pre><code>## [1] 47  3</code></pre>
 <p>The new data frame <code>deck3</code> has observations removed if they have a missing value.</p>
 <p>With these basic tools of value modification in hand, we can move on to deal with more complicated data. Before that, let us take a step back and talk about packages and libraries in R.</p>
 </div>
@@ -924,329 +710,56 @@ is.na(deck3)</code></pre>
 <h1 number="4"><span class="header-section-number">4</span> Installing Packages and Loading Libraries</h1>
 <p>So far we have used only very basic commands in R. In order to use more advanced and convenient commands, we sometimes need to install packages. Packages are collections of functions, data and documentation in R that greatly extend R’s basic capabilities. Here let us look at a very useful package called <code>tidyverse</code>. It is more like a collection of packages, and makes cleaning data a lot easier.</p>
 <p>Before we can use anything from <code>tidyverse</code>, we will need to install it. This is because some functions of <code>tidyverse</code> is not included in the basic R. To install <code>tidyverse</code> (and other packages in general), we can use the following command:</p>
-<pre class="r"><code>install.packages(&quot;tidyverse&quot;, type = &quot;binary&quot;)</code></pre>
 <p>THe installation might take a while, and you may need to respond to some prompts. You may see some errors in the process. But as long as you see the package downloaded (it should end with a line <code>The downloaded source packages are in</code>), then do not worry too much about it. We will deal with it later if we encounter problems.</p>
 <p>Now that we have the package installed, you can exclude it from your codes, as you do not need (or want) to install it everytime you run the codes - it just needs to be installed once.</p>
 <p>After successful installation, we need to load the relevant functions in order to use them. To do so we can do the following:</p>
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
-<pre><code>## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
-## ✓ tibble  3.1.3     ✓ dplyr   1.0.7
-## ✓ tidyr   1.1.3     ✓ stringr 1.4.0
-## ✓ readr   2.0.0     ✓ forcats 0.5.1</code></pre>
-<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
 <p>Generally you only need to load the library once as well. However loading library does not take a long time so you can keep it in the code if you want. For the conflicts you might see, this is because some functions in <code>tidyverse</code> share the same name as basic functions in R. If you want to use the base functions of R, you need to write <code>stats::filter()</code> instead of <code>filter()</code>, as the function with the same name from <code>tidyverse</code> is masking the base function.</p>
 <p>We can install other packages and load other libraries in a similar way. Having learned the codes, let us move back to data.</p>
 </div>
-<div id="data-transformation-and-visualization" class="section level1" number="5">
-<h1 number="5"><span class="header-section-number">5</span> Data Transformation and Visualization</h1>
+<div id="data-transformation" class="section level1" number="5">
+<h1 number="5"><span class="header-section-number">5</span> Data Transformation</h1>
 <p>To learn more about how to clean and visualize data, we need to use a more complicated data set. Let us load the following library:</p>
-<pre class="r"><code>install.packages(&quot;nycflights13&quot;)</code></pre>
-<pre class="r"><code>library(nycflights13)</code></pre>
 <p>This loads a dataset on flights departing New York City in 2013. Let us load the data as a data frame:</p>
-<pre class="r"><code>nycflights13::flights</code></pre>
-<pre><code>## # A tibble: 336,776 × 19
-##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-##  1  2013     1     1      517            515         2      830            819
-##  2  2013     1     1      533            529         4      850            830
-##  3  2013     1     1      542            540         2      923            850
-##  4  2013     1     1      544            545        -1     1004           1022
-##  5  2013     1     1      554            600        -6      812            837
-##  6  2013     1     1      554            558        -4      740            728
-##  7  2013     1     1      555            600        -5      913            854
-##  8  2013     1     1      557            600        -3      709            723
-##  9  2013     1     1      557            600        -3      838            846
-## 10  2013     1     1      558            600        -2      753            745
-## # … with 336,766 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
-## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
-## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <p>We can see that this dataset is a lot more complex than <code>deck</code>. It has 336,776 observations, each with 19 variables. This dataset contains variables of many different natures. Some of them are integers, denoted by <code>int</code>, some are character strings, denoted by <code>chr</code>, et cetera. Now let us mess around with the data a little bit.</p>
 <div id="filter" class="section level2" number="5.1">
 <h2 number="5.1"><span class="header-section-number">5.1</span> Filter</h2>
 <p>We already learned how to select certain observations from a dataset. However, it is usually the case that this is more than one way to do the same thing. Here we can make sure of the <code>filter</code> command to do the same thing in a simpler way. Suppose we wish to select all the flights on the day of Jan 1st:</p>
-<pre class="r"><code>filter(flights, month == 1, day == 1)</code></pre>
-<pre><code>## # A tibble: 842 × 19
-##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-##  1  2013     1     1      517            515         2      830            819
-##  2  2013     1     1      533            529         4      850            830
-##  3  2013     1     1      542            540         2      923            850
-##  4  2013     1     1      544            545        -1     1004           1022
-##  5  2013     1     1      554            600        -6      812            837
-##  6  2013     1     1      554            558        -4      740            728
-##  7  2013     1     1      555            600        -5      913            854
-##  8  2013     1     1      557            600        -3      709            723
-##  9  2013     1     1      557            600        -3      838            846
-## 10  2013     1     1      558            600        -2      753            745
-## # … with 832 more rows, and 11 more variables: arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;,
-## #   flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;,
-## #   distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <p>Now only flights from Jan 1st appears and the sample size shrinks to 842, a good start. Comparing to using <code>[]</code> to subset the data, <code>filter</code> is a little bit more intuitive and can do things more easily. Right now we only have the data shown to us but not stored in objects, so to do that, we can assign the selected data to a new data frame:</p>
-<pre class="r"><code>jan1 &lt;- filter(flights, month == 1, day == 1)</code></pre>
 <p>You can easily click it in the environment and view it. There are other comparison operators you can use to filter the data. For example, if you wish to include flights in November or December, we can write:</p>
-<pre class="r"><code>filter(flights, month == 11 | month == 12)</code></pre>
-<pre><code>## # A tibble: 55,403 × 19
-##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-##  1  2013    11     1        5           2359         6      352            345
-##  2  2013    11     1       35           2250       105      123           2356
-##  3  2013    11     1      455            500        -5      641            651
-##  4  2013    11     1      539            545        -6      856            827
-##  5  2013    11     1      542            545        -3      831            855
-##  6  2013    11     1      549            600       -11      912            923
-##  7  2013    11     1      550            600       -10      705            659
-##  8  2013    11     1      554            600        -6      659            701
-##  9  2013    11     1      554            600        -6      826            827
-## 10  2013    11     1      554            600        -6      749            751
-## # … with 55,393 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
-## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
-## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <p>If you wish to find flights that had a delay (both arrival and departure) of no more than two hours, you can write the following:</p>
-<pre class="r"><code>filter(flights, arr_delay &lt;= 120, dep_delay &lt;= 120)</code></pre>
-<pre><code>## # A tibble: 316,050 × 19
-##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-##  1  2013     1     1      517            515         2      830            819
-##  2  2013     1     1      533            529         4      850            830
-##  3  2013     1     1      542            540         2      923            850
-##  4  2013     1     1      544            545        -1     1004           1022
-##  5  2013     1     1      554            600        -6      812            837
-##  6  2013     1     1      554            558        -4      740            728
-##  7  2013     1     1      555            600        -5      913            854
-##  8  2013     1     1      557            600        -3      709            723
-##  9  2013     1     1      557            600        -3      838            846
-## 10  2013     1     1      558            600        -2      753            745
-## # … with 316,040 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
-## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
-## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <p>Looks like the sample size did not shrink a lot, but no more than two hours is a pretty slack condition. Alternatively, we can achieve the same thing with the following command:</p>
-<pre class="r"><code>filter(flights, !(arr_delay &gt; 120 | dep_delay &gt; 120))</code></pre>
-<pre><code>## # A tibble: 316,050 × 19
-##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-##  1  2013     1     1      517            515         2      830            819
-##  2  2013     1     1      533            529         4      850            830
-##  3  2013     1     1      542            540         2      923            850
-##  4  2013     1     1      544            545        -1     1004           1022
-##  5  2013     1     1      554            600        -6      812            837
-##  6  2013     1     1      554            558        -4      740            728
-##  7  2013     1     1      555            600        -5      913            854
-##  8  2013     1     1      557            600        -3      709            723
-##  9  2013     1     1      557            600        -3      838            846
-## 10  2013     1     1      558            600        -2      753            745
-## # … with 316,040 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
-## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
-## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <p>The operator <code>!</code> means “not something”. Remember that <code>arr_delay &gt; 120 | dep_delay &gt; 120</code> means arrival delay of more than two hours <strong>or</strong> departure delays of more than two hours. Adding <code>!</code> excludes all that, so logically it means the same thing as <code>arr_delay &lt;= 120, dep_delay &lt;= 120</code>. To sum up, apart from standard notations like <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>==</code>, operators like <code>,</code> (and), <code>!</code> (not) and <code>|</code> (or) can also be very useful when setting filtering conditions.</p>
 </div>
 <div id="arrange" class="section level2" number="5.2">
 <h2 number="5.2"><span class="header-section-number">5.2</span> Arrange</h2>
 <p>You can arrange rows by variables. For example, if you wish to sort the flights by year-month-day, we can do the following:</p>
-<pre class="r"><code>arrange(flights, year, month, day)</code></pre>
-<pre><code>## # A tibble: 336,776 × 19
-##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-##  1  2013     1     1      517            515         2      830            819
-##  2  2013     1     1      533            529         4      850            830
-##  3  2013     1     1      542            540         2      923            850
-##  4  2013     1     1      544            545        -1     1004           1022
-##  5  2013     1     1      554            600        -6      812            837
-##  6  2013     1     1      554            558        -4      740            728
-##  7  2013     1     1      555            600        -5      913            854
-##  8  2013     1     1      557            600        -3      709            723
-##  9  2013     1     1      557            600        -3      838            846
-## 10  2013     1     1      558            600        -2      753            745
-## # … with 336,766 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
-## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
-## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <p>In our data this does not change much as this is the original way the dataset was arranged. R defaults to sorting by ascending order, but you can switch to descending order if you wish by doing this:</p>
-<pre class="r"><code>arrange(flights, desc(dep_delay))</code></pre>
-<pre><code>## # A tibble: 336,776 × 19
-##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-##  1  2013     1     9      641            900      1301     1242           1530
-##  2  2013     6    15     1432           1935      1137     1607           2120
-##  3  2013     1    10     1121           1635      1126     1239           1810
-##  4  2013     9    20     1139           1845      1014     1457           2210
-##  5  2013     7    22      845           1600      1005     1044           1815
-##  6  2013     4    10     1100           1900       960     1342           2211
-##  7  2013     3    17     2321            810       911      135           1020
-##  8  2013     6    27      959           1900       899     1236           2226
-##  9  2013     7    22     2257            759       898      121           1026
-## 10  2013    12     5      756           1700       896     1058           2020
-## # … with 336,766 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
-## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
-## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <p>By default, missing values (<code>NA</code>) are always sorted at the end. It is always worth remembering that none of the above arrangement is really saved unless you assign the output into a new data frame.</p>
 </div>
 <div id="select" class="section level2" number="5.3">
 <h2 number="5.3"><span class="header-section-number">5.3</span> Select</h2>
 <p>When you want to select just a few variables out of potential hundreds, you can use the <code>select</code>:</p>
-<pre class="r"><code>select(flights, year, month, day)</code></pre>
-<pre><code>## # A tibble: 336,776 × 3
-##     year month   day
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;
-##  1  2013     1     1
-##  2  2013     1     1
-##  3  2013     1     1
-##  4  2013     1     1
-##  5  2013     1     1
-##  6  2013     1     1
-##  7  2013     1     1
-##  8  2013     1     1
-##  9  2013     1     1
-## 10  2013     1     1
-## # … with 336,766 more rows</code></pre>
 <p>We now have 336,776 observations but only three variables. The sample size shrank a lot. The <code>select</code> command is very useful for truncating datasets if you just want to get rid of certain variables. There are other options you can use. For example, you can pick all the variables between year and day (inclusive) by doing the following:</p>
-<pre class="r"><code>select(flights, year:day)</code></pre>
-<pre><code>## # A tibble: 336,776 × 3
-##     year month   day
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;
-##  1  2013     1     1
-##  2  2013     1     1
-##  3  2013     1     1
-##  4  2013     1     1
-##  5  2013     1     1
-##  6  2013     1     1
-##  7  2013     1     1
-##  8  2013     1     1
-##  9  2013     1     1
-## 10  2013     1     1
-## # … with 336,766 more rows</code></pre>
 <p>You can also exclude all the variables between year and day (inclusive):</p>
-<pre class="r"><code>select(flights, -(year:day))</code></pre>
-<pre><code>## # A tibble: 336,776 × 16
-##    dep_time sched_dep_time dep_delay arr_time sched_arr_time arr_delay carrier
-##       &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt; &lt;chr&gt;  
-##  1      517            515         2      830            819        11 UA     
-##  2      533            529         4      850            830        20 UA     
-##  3      542            540         2      923            850        33 AA     
-##  4      544            545        -1     1004           1022       -18 B6     
-##  5      554            600        -6      812            837       -25 DL     
-##  6      554            558        -4      740            728        12 UA     
-##  7      555            600        -5      913            854        19 B6     
-##  8      557            600        -3      709            723       -14 EV     
-##  9      557            600        -3      838            846        -8 B6     
-## 10      558            600        -2      753            745         8 AA     
-## # … with 336,766 more rows, and 9 more variables: flight &lt;int&gt;, tailnum &lt;chr&gt;,
-## #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;,
-## #   minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <p>There are other conditions that you can set. For example, using <code>starts_with(&quot;abc&quot;)</code> will select all variables that start with <code>abc</code>, <code>ends_with(&quot;xyz&quot;)</code> and <code>contains(&quot;efg&quot;)</code> work similarly. There are even more options that you can easily google up.</p>
 </div>
 <div id="mutate" class="section level2" number="5.4">
 <h2 number="5.4"><span class="header-section-number">5.4</span> Mutate</h2>
 <p>You will often come across situations where you wish to create a new variable that is a function of existing variables. This is where we can use the <code>mutate</code> option. Let us take a look. First we will create a dataset with fewer variables so that it is easy to see everything.</p>
-<pre class="r"><code>flights_short &lt;- select(flights, 
-                        year:day,
-                        ends_with(&quot;delay&quot;),
-                        distance,
-                        air_time)</code></pre>
 <p>Now suppose we want to know the time gained in air (delay time minus arrival time) and the average speed of the flight:</p>
-<pre class="r"><code>mutate(flights_short,
-       gain = dep_delay - arr_delay,
-       speed = distance / air_time * 60)</code></pre>
-<pre><code>## # A tibble: 336,776 × 9
-##     year month   day dep_delay arr_delay distance air_time  gain speed
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-##  1  2013     1     1         2        11     1400      227    -9  370.
-##  2  2013     1     1         4        20     1416      227   -16  374.
-##  3  2013     1     1         2        33     1089      160   -31  408.
-##  4  2013     1     1        -1       -18     1576      183    17  517.
-##  5  2013     1     1        -6       -25      762      116    19  394.
-##  6  2013     1     1        -4        12      719      150   -16  288.
-##  7  2013     1     1        -5        19     1065      158   -24  404.
-##  8  2013     1     1        -3       -14      229       53    11  259.
-##  9  2013     1     1        -3        -8      944      140     5  405.
-## 10  2013     1     1        -2         8      733      138   -10  319.
-## # … with 336,766 more rows</code></pre>
 <p>Two new variables are created and amended to the end of the data frame. You can create other variables in similar fashion, and there are also many operations you can do on existing variables that can generate new variables (e.g., leads and lags). Obviously we cannot cover everything here, but learning how to add variables in an important first step.</p>
 </div>
 <div id="summarize" class="section level2" number="5.5">
 <h2 number="5.5"><span class="header-section-number">5.5</span> Summarize</h2>
 <p>Sometimes the unit of observation is too small or too detailed for your purpose (yes, that can happen). In those cases, You will want to collapse a set of rows into a single row. For example, it is very tedious to analyze every single flight in the data frame, so maybe we will want to look at the data day by day. What we can do is to take the average of the flights of a day. For example, to get the average delay per date:</p>
-<pre class="r"><code>by_day &lt;- group_by(flights, year, month, day)
-summarise(by_day, count = n(), delay = mean(dep_delay, na.rm = TRUE))</code></pre>
-<pre><code>## `summarise()` has grouped output by &#39;year&#39;, &#39;month&#39;. You can override using the `.groups` argument.</code></pre>
-<pre><code>## # A tibble: 365 × 5
-## # Groups:   year, month [12]
-##     year month   day count delay
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
-##  1  2013     1     1   842 11.5 
-##  2  2013     1     2   943 13.9 
-##  3  2013     1     3   914 11.0 
-##  4  2013     1     4   915  8.95
-##  5  2013     1     5   720  5.73
-##  6  2013     1     6   832  7.15
-##  7  2013     1     7   933  5.42
-##  8  2013     1     8   899  2.55
-##  9  2013     1     9   902  2.28
-## 10  2013     1    10   932  2.84
-## # … with 355 more rows</code></pre>
 <p>First, we used <code>group_by</code> to change the unit of analysis to each date (think about what would happen if I leave out “year” and “month”), so the <code>by_day</code> dataset has the same observation but with a different unit of analysis. Then I collapsed the data by date and got the average departure delay. The command <code>summarise</code> does the collapsing for us. Also note that we applied <code>na.rm = TRUE</code> so that we ignore all missing values. Try on your own what would happen if we do not use this option.</p>
 <p>I included a new variable called <code>count = n()</code> here. This gives you the number of observations that you are doing your operation (in our case, <code>mean()</code>) on. So for example, on January 1st, we are averaging the delay for 842 flights. This number is not very useful to use right now, but in cases where the number of observations in a group is small enough to affect the outcome, knowing the number would be useful. We will come across examples in the future.</p>
 <p>If you wish to ungroup a dataset, simply apply:</p>
-<pre class="r"><code>ungroup(by_day)</code></pre>
-<pre><code>## # A tibble: 336,776 × 19
-##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-##  1  2013     1     1      517            515         2      830            819
-##  2  2013     1     1      533            529         4      850            830
-##  3  2013     1     1      542            540         2      923            850
-##  4  2013     1     1      544            545        -1     1004           1022
-##  5  2013     1     1      554            600        -6      812            837
-##  6  2013     1     1      554            558        -4      740            728
-##  7  2013     1     1      555            600        -5      913            854
-##  8  2013     1     1      557            600        -3      709            723
-##  9  2013     1     1      557            600        -3      838            846
-## 10  2013     1     1      558            600        -2      753            745
-## # … with 336,766 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
-## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
-## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 </div>
 <div id="group-mutates-and-filters" class="section level2" number="5.6">
 <h2 number="5.6"><span class="header-section-number">5.6</span> Group Mutates and Filters</h2>
 <p>You can also use the <code>group_by</code> function to mutate the data frame. For example, suppose we wish to find the worst offenders of arrival delays by day, we can do the following:</p>
-<pre class="r"><code>flights_short &lt;- group_by(flights_short, year, month, day)
-flights_short &lt;- filter(flights_short, rank(desc(arr_delay)) &lt;= 10)
-flights_short</code></pre>
-<pre><code>## # A tibble: 3,609 × 7
-## # Groups:   year, month, day [365]
-##     year month   day dep_delay arr_delay distance air_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-##  1  2013     1     1       853       851      184       41
-##  2  2013     1     1       290       338     1134      213
-##  3  2013     1     1       260       263      266       46
-##  4  2013     1     1       155       166      277       68
-##  5  2013     1     1       157       174      213       60
-##  6  2013     1     1       216       222      708      121
-##  7  2013     1     1       255       250      589      115
-##  8  2013     1     1       285       246     1085      146
-##  9  2013     1     1       192       191      199       44
-## 10  2013     1     1       379       456     1092      222
-## # … with 3,599 more rows</code></pre>
 <p>Now what do we have? We picked out the top 10 worst delays for each day. We can also find all groups bigger or less than a threshold:</p>
-<pre class="r"><code>popular_dest &lt;- filter(group_by(flights, dest), n() &gt; 365)
-popular_dest</code></pre>
-<pre><code>## # A tibble: 332,577 × 19
-## # Groups:   dest [77]
-##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;
-##  1  2013     1     1      517            515         2      830            819
-##  2  2013     1     1      533            529         4      850            830
-##  3  2013     1     1      542            540         2      923            850
-##  4  2013     1     1      544            545        -1     1004           1022
-##  5  2013     1     1      554            600        -6      812            837
-##  6  2013     1     1      554            558        -4      740            728
-##  7  2013     1     1      555            600        -5      913            854
-##  8  2013     1     1      557            600        -3      709            723
-##  9  2013     1     1      557            600        -3      838            846
-## 10  2013     1     1      558            600        -2      753            745
-## # … with 332,567 more rows, and 11 more variables: arr_delay &lt;dbl&gt;,
-## #   carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;,
-## #   air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
 <p>What is this? We first changed the unit of analysis to each destination. Then we kept all the flights which have a destination that has on average more than 1 flight per day from New York and deleted the rest. Note that I incorporated the <code>group_by</code> function under <code>filter</code>, saving an extra step compared to the previous code where we were finding the worst delays by day.</p>
 </div>
 </div>
