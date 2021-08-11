@@ -1,0 +1,73 @@
+---
+title: "Econ 10R Homework 1 Solutions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Question 2
+
+Create two separate dice. Then, create a function named `roll` so that you can roll the dice and get two random numbers (one from each). Then compare them (use `>` or `<` operator) and let R tell you which one is bigger. *(Hint: The dice you create will have different dimensions to the deck of cards we used in class, so selecting values will work differently. R will treat them as being a single row, so think about how to select the first value when using `[]`.)*
+
+First, create two dice:
+
+```{r}
+die1 <- 1:6
+die2 <- 1:6
+```
+
+Now, create the `roll` function:
+
+```{r}
+set.seed(5)
+roll <- function(x){
+  random <- sample(1:6, size = 6)
+  x <- x[random]
+  x[1]
+}
+```
+
+Note that in `[]`, we only write `[random]` instead of `[random, ]`. This is because of the fact that we will be applying `roll` to vectors only, which do not have a second dimension to point to.
+
+Now apply the roll to the dice:
+
+```{r}
+roll(die1)
+roll(die2)
+```
+
+Comparing their values are easy. You can also do it in one step:
+
+```{r}
+roll(die1) > roll(die2)
+```
+
+Note that this only works after setting the seed, which is a way to fix the random number generator so that we have reproducible outcome. Do not worry too much about it for now.
+
+# Question 3
+
+Create a chess set by hand and assign it to a data frame. You can look at the way that we created the three cards in class as an example. Remember that we have two colors, black and white, with 16 chess pieces each. Assign values to each piece according to the following rule: A pawn is worth one point, a knight or bishop is worth three points, a rook is worth five points and a queen is worth nine points. Also, as it does not make sense for the king to have a value, assign `NA` to it. Then create two new data frames, each contain all the pieces from one color only. Finally, save the full set (the one with all the pieces, from both colors) into a `.csv` or `.xlsx` file. *(Hint: Each chess piece should take up one row (an observation), has three variables. The order of the row does not matter, but you can order them in the same way as the initial position on the chessboard if you want.)*
+
+First, create the chess set:
+
+```{r}
+chess <- data.frame(color = c("white", "white", "white", "white", "white", "white", "white", "white", "white", "white", "white", "white", "white", "white", "white", "white", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black", "black"),
+                 piece = c("pawn", "pawn", "pawn", "pawn", "pawn", "pawn", "pawn", "pawn", "bishop", "bishop", "knight", "knight", "rook", "rook", "queen", "king", "pawn", "pawn", "pawn", "pawn", "pawn", "pawn", "pawn", "pawn", "bishop", "bishop", "knight", "knight", "rook", "rook", "queen", "king"),
+                 value = c(1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 5, 5, 9, NA, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 5, 5, 9, NA))
+chess
+```
+Now separate the full set by color:
+
+```{r}
+chess_white <- chess[1:16, ]
+chess_black <- chess[17:32, ]
+```
+
+We can then save the full set:
+
+```{r}
+write.csv(chess, file = "chess.csv", row.names = FALSE)
+```
+
