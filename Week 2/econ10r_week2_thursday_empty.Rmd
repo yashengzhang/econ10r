@@ -1,0 +1,213 @@
+---
+title: "Econ 10R Week 2 Thursday"
+author: "Luke Zhang"
+output:
+  html_document:
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Central Tendency
+
+In today's class we will use R to present some descriptive statistics. First, we need to load a dataset that is sufficiently interesting to do it. The `flights` data are actually quite good for this purpose. Let us load the library and data first:
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+```
+
+Now we can use the `flights` data whenever we want:
+
+```{r}
+flights_clean <- na.omit(flights)
+flights_clean
+```
+
+Now that we have the dataset loaded (and missing values taken out), we can perform some calculations to generate the descriptive statistics.
+
+## Mean
+
+There are several ways to get the mean (as usual). First of all, we can sum the numbers and divide it by observation. For example, suppose I wish to know the average departure delay, I can do the following:
+
+```{r}
+sum(flights_clean$dep_delay) / summarise(flights_clean, count = n())
+```
+
+I summed the departure delay across all flights and divided by the number of flights in the data. Since we already removed all the missing ones, we do not need to include `na.rm = TRUE`.
+
+Another way is to directly use the `mean` command:
+
+```{r}
+mean(flights_clean$dep_delay)
+```
+
+Clearly the second way is more intuitive and easier. We can also generate the mean for each date, just like how we did it last class:
+
+```{r}
+summarise(group_by(flights_clean, year, month, day), count = n(), dep_delay_mean = mean(dep_delay))
+```
+
+However, we should note that it is meaningless to get the mean of some other variables, for example:
+
+```{r eval=FALSE, include=TRUE}
+mean(flights_clean$dest)
+```
+
+This is because `dest` is not a numerical value, and even if it is, it would still not make sense to take its mean. For instance, variables like `day` can have a numerical mean, but it is very questionable what it represents if we calculate it.
+
+## Median
+
+We can also manually get the median of departure delays, but it will be unnecessarily tedious. Instead, we can apply the `median` command:
+
+```{r}
+median(flights_clean$dep_delay)
+```
+
+Now, median is more meaningful for some variables than mean. For instance:
+
+```{r}
+median(flights_clean$dep_time)
+```
+
+It is quite meaningless to talk about the average departure time, but for the median, it tells us that half of the flights departed before 2pm and the other half departed after 2pm. Note that this is not a case where median is "better" than the mean, rather, it highlights the difference between the two measures.
+
+## Trimmed Mean
+
+We talked about in class how the mean can be sensitive to outliers (extreme values). They may skew the mean toward one end or the other. In these cases, we may switch to the median. But if you still wish to know the mean, we can take another approach called "trimmed mean". Basically, we will drop the observations that can be considered outliers. For example, suppose we want to drop all values that are at the top and bottom 1%:
+
+```{r}
+mean(flights_clean$dep_delay, trim = 0.01)
+```
+
+We see that the average falls by about 2 minutes. This probably suggests that there are some large outliers in the original dataset. Although this approach can be useful, you will need to justify dropping those extreme observations as by doing this we lose a lot of information about the sample.
+
+## Mode
+
+Mode is the value that comes up most frequently in the dataset. R does not have a default option to get the mode, as the word itself has so many meanings that if you just type `mode` it will return you a different thing (the type of the object). We can get the mode of a variable by a function in the `lsr` package. Let use install the package:
+
+```{r eval=FALSE, include=TRUE}
+install.packages("lsr")
+```
+
+Then load the library:
+
+```{r}
+library("lsr")
+```
+
+Then we can apply the `modeOf` function to get the mode:
+
+```{r}
+modeOf(flights_clean$dest)
+```
+
+We see that the most frequent destination from New York City is Atlanta, the busiest airport in the US, so no surprise there. We can also generate the most flown airline:
+
+```{r}
+modeOf(flights_clean$carrier)
+```
+
+It turns out to be United Airlines. You can also get the mode of things like departure delays:
+
+```{r}
+modeOf(flights_clean$dep_delay)
+```
+
+But this is not particularly useful compared to the mean.
+
+We have looked at the mean, median and mode, so let's move on to measures of dispersion.
+
+# Measure of Dispersion
+
+We talked about several measures of dispersion in class - range, standard deviation, quartiles and interquartile range. Let's try to generate them in R.
+
+## Variance and Standard Deviations
+
+R has built-in commands to get variance and standard deviations given how important they are:
+
+```{r}
+var(flights_clean$dep_delay)
+sd(flights_clean$dep_delay)
+```
+
+One thing to note here. When R calculates variance and standard deviations, it actually calculates the *sample variance* and *sample standard deviation* (also know as *standard error*). This is what the `N - 1` does in our slides. It is not a problem for us since sample variance and standard error are what we want. Basically, the "true" or population variance and standard deviation use `N`, the sample analogue use `N - 1`. The reason is related to the fact that using `N - 1` gives the sample variance and standard error a nice property called unbiasedness. You will learn this in a full stats class, but right now you just need to be aware of it.
+
+## Range
+
+We can get the range of a variable by subtracting the minimum value from the maximum value:
+
+```{r}
+max(flights_clean$dep_delay) - min(flights_clean$dep_delay)
+```
+
+Or alternatively, R provides us with a specific code to do it:
+
+```{r}
+range(flights_clean$dep_delay)
+```
+
+This command does not do the subtraction for you, but it gives useful information in one word. Again, range only makes sense for certain variables, like `distance` and `arr_delay`, but not others like `dest`, `carrier` or even `dep_time`.
+
+## Quantiles
+
+To get the quantiles, we can use the following command:
+
+```{r}
+quantile(flights_clean$dep_delay, probs = 0.5)
+```
+
+This is exactly the median, and it is because we are asking for the 50% quantile. We can pick any number we like:
+
+```{r}
+quantile(flights_clean$dep_delay, probs = 0.71)
+```
+
+We can also return the interquartile range by including two numbers in `probs`:
+
+```{r}
+quantile(flights_clean$dep_delay, probs = c(0.25, 0.75))
+```
+
+And again we can pick any numbers we like. Alternatively, we can get the interquartile range with one specific command:
+
+```{r}
+IQR(flights_clean$dep_delay)
+```
+
+This gives us the result right away.
+
+# Correlation
+
+So far we covered the topics on a single variable. Now we can look at correlations between two variables.
+
+## Covariance and Correlation
+
+We can find the covariance between any two numerical variables. However, it would not be very interesting unless we have a good reason why their covariance may be meaningful. Luckily for us, the `flight` dataset has two variables whose correlation deserves to be studied - `dep_delay` and `arr_delay`. In order to calculate covariance between these two variables, we can use the following function:
+
+```{r}
+cov(flights_clean$dep_delay, flights_clean$arr_delay)
+```
+
+But we know that covariance is not very easy to interpret on its own. We can look further by calculating the correlation coefficient:
+
+```{r}
+cor(flights_clean$dep_delay, flights_clean$arr_delay)
+```
+
+This is a nice result - the correlation is very high (close to 1) and this is to be expected. If departure gets delayed by a lot, then it is very likely that arrival will also be delayed, by a lot. After all there are only limited gains you can make in the air.
+
+## Visualize Correlation
+
+Let us try to visualize the correlation between the two variables using a graph. The package `tidyverse` has a function `ggplot` that is designed specifically to make nice graphs in R. Let us take a look at one example:
+
+```{r}
+ggplot(data = flights_clean, aes(x = dep_delay, y = arr_delay, color = carrier)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(title = "Correlation Between Departure and Arrival Delays",
+       x = "Departure Delay", y = "Arrival Delay")
+```
+

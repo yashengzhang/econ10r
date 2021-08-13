@@ -1,0 +1,175 @@
+---
+title: "Econ 10R Homework 2 Solutions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+# Question 1
+
+Use the New York City 2013 flights data (henceforth flights). Find the following flights:
+
+a. The flight with the fastest speed
+b. Flew to Houston (IAH or HOU)
+c. Departed between midnight and 6am (red eyes)
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+```
+
+
+## Question 1a
+
+To find the flight with the fastest speed, we need to calculate the speed of each flight, then arrange the data frame so that the flight with the highest speed is at the top:
+
+```{r}
+flights_speed <- mutate(flights, speed = distance / air_time * 60)
+arrange(flights_speed, desc(flights_speed$speed))
+```
+
+Alternatively we can use `filter` to select the flight based on the ranking of flight speed.
+
+```{r}
+filter(flights_speed, rank(desc(flights_speed$speed)) == 1)[, c("year", "month", "day", "dest", "carrier", "flight", "speed")]
+```
+
+Therefore the fastest flight is DL1499 on May 25th, with an average speed of 703mph. The average commercial flight speed is around 575mph, so this flight is rather fast, assuming that there are no errors in the data recording process.
+
+## Question 1b
+
+We can use `filter` to find all the flights between NYC and Houston:
+
+```{r}
+flights_houston <- filter(flights, dest == "IAH" | dest == "HOU")
+flights_houston
+```
+
+## Question 1c
+
+To find all the red eyes (midnight to 6am), we can apply `filter` again:
+
+```{r}
+flights_redeyes <- filter(flights, dep_time <= 600)
+flights_redeyes
+```
+
+# Question 2
+
+Use flights, find the following destinations:
+a. All destinations that are served by at least two carriers
+b. The destination with the least flights
+c. The most popular destination in the summer (June, July, and August)
+
+## Question 2a
+
+To find all the destinations served by at least two carriers, we can do the following:
+
+```{r}
+flights_two <- mutate(group_by(flights, dest), n_carriers = n_distinct(carrier))
+flights_two <- filter(flights_two, n_carriers > 1)
+unique(flights_two$dest)
+```
+
+Here are all the destinations being served by more than two carriers. We first created a new variables for each `dest` that records the number of unique carriers. Then we filtered out the flights with a destination that is served by more than one carrier. Finally, we can list the destinations by asking R to tell us all the unique values of the variable `dest` in the filtered data frame.
+
+## Question 2b
+
+To find the destination with the least flights, we can do the following:
+
+```{r}
+flights_least <- mutate(group_by(flights, dest), count = n())
+flights_least <- arrange(flights_least, count)
+select(flights_least, year, month, day, dest)
+```
+
+We set the unit of analysis to `dest`, the counted each destination's number of appearance in the data. We can then arranged the rows by the value of `count` in ascending order.
+
+So we found two airports that got served the least. If you look carefully at the dataset, you will notice that `LGA` is actually LaGuardia, which is in NYC. The flight was between Newark and LaGuardia, so it is likely a diversion. Therefore `LEX` is truly the least served airport.
+
+Question 2c
+
+To get the most popular destination in the summer, we can apply functions similar to the previous questions:
+
+```{r}
+flights_summer <- filter(flights, 
+                         month == 6 | month == 7 | month == 8)
+flights_summer <- mutate(group_by(flights_summer, dest), count = n())
+flights_summer <- arrange(flights_summer, desc(count))
+select(flights_summer, year, month, day, dest)
+```
+
+We kept flights in the summer only, counted the number of appearance for each destination, and then ranked them. It is clear that `ORD` (Chicago) is the most popular destination over the summer, with 4724 flights served.
+
+Alternatively, you can collapse the data frame by taking the average of `count` for each `dest` and then apply `rank` to get the top 1.
+
+# Question 3
+
+Use flights, generate a variable that measures the time gained in air (departure delay minus arrival delay). Calculate the correlation between time gained in air and the distance to destination. Plot them on a graph. You can plot the graph in any way you like, but you must include the correct labels for each axis and a title.
+
+To do so, let's first generate the time gained variable:
+
+```{r}
+flights_gain <- mutate(flights, gain = dep_delay - arr_delay)
+flights_gain <- na.omit(flights_gain)
+```
+
+Then we can use `cor` to get the correlation coefficient between `gain` and `distance`:
+
+```{r}
+cor(flights_gain$gain, flights_gain$distance)
+```
+
+So we have a positive but relatively weak relationship between the two. Let us plot it in a graph:
+
+```{r}
+flights_gain <- summarise(group_by(flights_gain, distance),
+                          gain_mean = mean(gain))
+ggplot(data = flights_gain, aes(x = distance, y = gain_mean)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(title = "Correlation Between Distance and Time Gained in Air",
+       x = "Distance", y = "Time Gained")
+```
+
+In order to make the graph more presentable, I took the average of the gain conditional on the same distance. It is not necessary to do so, but it makes the graph much clearer.
+
+# Question 4
+
+Use the function `lag`, explore how the delay of a flight is related to the delay of the immediately preceding flight. Plot them on a graph.
+
+We first need to generate the lag variables. Let us arrange the data by airport-date-departure time:
+
+```{r}
+flights_delay <- arrange(flights, origin, month, day, dep_time)
+```
+
+Now we can generate a new variable, the lagged version of departure delay:
+
+```{r}
+flights_delay <- na.omit(mutate(flights_delay, dep_delay_lag = lag(dep_delay)))
+```
+
+We can first check the correlation between delays and lagged delays:
+
+```{r}
+cor(flights_delay$dep_delay, flights_delay$dep_delay_lag)
+```
+
+Which is reasonably high. Let's plot this:
+
+```{r}
+flights_delay <- summarise(group_by(flights_delay, dep_delay_lag),
+          dep_delay_mean = mean(dep_delay))
+ggplot(data = flights_delay, aes(x = dep_delay_lag, y = dep_delay_mean)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  scale_x_continuous(breaks = seq(0, 1500, by = 120)) +
+  labs(title = "Correlation Between Delays and Lagged Delays",
+       x = "Departure Delay", y = "Previous Departure Delay")
+```
+
+We can see that the relationship is positively strong for the first 3-4 hours, and then weakens by a lot. In order to make the graph more presentable, I took the average of the previous departure delay (`dep_delay`) conditional on the value of departure delay (`dep_delay_lag`). It is not necessary to do so, but just reduces the number of points on the graph so that it is easier to look at.
