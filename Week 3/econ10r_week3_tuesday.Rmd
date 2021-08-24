@@ -1,0 +1,194 @@
+---
+title: "Econ 10R Week 2"
+author: "Luke Zhang"
+output:
+  html_document:
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Sampling Distribution
+
+In class, we had two samples of size 20 from a normal distribution with mean 5 and variance 1, i.e., $X \sim N(5, 1)$. We calculated some sample statistics for both samples, but it is no where near enough to get the sampling distribution with just two samples. Let us now us R to simulate 10,000 samples and calculate the sample statistics for each sample. Then we can plot the sampling distributions and see how they look.
+
+Let's first try simulating one sample of size 20:
+
+```{r}
+normal1 <- rnorm(20, mean = 5, sd = 1)
+normal1
+```
+
+You may notice that each time we run the code, we will get a different result. This is not surprising given that we can simulating random numbers. However, sometimes you will want to keep the same numbers so it is easier to replicate the results or do further analysis with them. We can use `set.seed()` to achieve that:
+
+```{r}
+set.seed(1)
+normal2 <- rnorm(20, mean = 5, sd = 1)
+normal2
+```
+
+
+You can put any number in `set.seed()`. If you run this code again and again, you will see that the numbers returned are always the same. They are still random numbers, but they just do not change between each execution of the codes.
+
+Next, we can use `replicate` to simulate the random sample for 10,000 times:
+
+```{r}
+set.seed(1)
+sims1 <- replicate(10000, expr = rnorm(20, mean = 5, sd = 1))
+```
+
+You can check what the simulated numbers look like by clicking `sims1` in the environment (it will take up far too much space to check here). We can achieve the same result by using a `for()` loop:
+
+```{r}
+set.seed(1)
+list1 = list()
+for (i in 1:10000) {
+    list1[[i]] = rnorm(n = 20, mean = 5, sd = 1)
+}
+```
+
+Again, you can check the numbers by clicking `list1`. Now let us move on to get the sampling distribution of some statistics.
+
+## Sample Mean
+
+We already learned that we can use `mean` to get the mean of a vector. It works similarly with each simulation. For example, we can generate the sample mean of all 10,000 samples using the following command:
+
+```{r}
+set.seed(1)
+sims1_mean <- replicate(10000, expr = mean(rnorm(20, mean = 5, sd = 1)))
+head(sims1_mean)
+```
+
+Note that `head` is asking R to show only the first few lines. Now that we have simulated 10,000 sample means, each one of them a statistic (a function of observations), what does the sampling distribution of the sample mean look like? Well, let's try to plot them and see what happens:
+
+```{r}
+hist(sims1_mean,
+     freq = FALSE,
+     main = "Sampling Distribution of Sample Means", xlab = "Simulated Sample Mean")
+lines(density(sims1_mean), col = "black")
+```
+
+## Sample Variance
+
+We can do the same for the sample variance:
+
+```{r}
+set.seed(1)
+sims1_var <- replicate(10000, expr = var(rnorm(20, mean = 5, sd = 1)))
+head(sims1_var)
+```
+
+Plot them using a histogram:
+
+```{r}
+hist(sims1_var,
+     freq = FALSE,
+     main = "Sampling Distribution of Sample Variance", xlab = "Simulated Sample Variance")
+lines(density(sims1_var), col = "black")
+```
+
+## Sample Maximum
+
+Doing the same for the sample maximum:
+
+```{r}
+set.seed(1)
+sims1_max <- replicate(10000, expr = max(rnorm(20, mean = 5, sd = 1)))
+hist(sims1_max,
+     freq = FALSE,
+     main = "Sampling Distribution of Sample Maximum", xlab = "Simulated Sample Maximum")
+lines(density(sims1_max), col = "black")
+```
+
+# Law of Large Numbers
+
+The Law of Large Numbers (LLN) suggests that, as a sample size grows, its mean gets closer to the average of the whole population. How do we show this with simulations? Well, we can change the number of observations in a single simulation and see what happens to the mean. In order to see them more clearly, let us make use of the mean absolute deviation - subtract the true mean, 5, from the observed sample mean, and then taking the absolute value for the sake of comparison:
+
+```{r}
+set.seed(1)
+abs(mean(rnorm(20, mean = 5, sd = 1)) - 5)
+abs(mean(rnorm(50, mean = 5, sd = 1)) - 5)
+abs(mean(rnorm(100, mean = 5, sd = 1)) - 5)
+abs(mean(rnorm(1000, mean = 5, sd = 1)) - 5)
+abs(mean(rnorm(10000, mean = 5, sd = 1)) - 5)
+```
+
+We can clearly see that as the number of observation increases, the mean absolute deviation shrinks. This shows LLN at works - as we gather more data, the sample mean gets closer and closer to the true mean! We can also observe it through another way:
+
+```{r}
+set.seed(1)
+sims_mean_df <- data.frame(sims_5 = replicate(10000, expr = mean(rnorm(5, mean = 5, sd = 1))),
+                           sims_20 = replicate(10000, expr = mean(rnorm(20, mean = 5, sd = 1))),
+                           sims_100 = replicate(10000, expr = mean(rnorm(100, mean = 5, sd = 1))))
+sims_mean_df_den <- apply(sims_mean_df, 2, density)
+names(sims_mean_df_den) <- c("Sims with n=5", "Sims with n=20", "Sims with n=100")
+plot(NA, xlim=range(sapply(sims_mean_df_den, "[", "x")), ylim=range(sapply(sims_mean_df_den, "[", "y")), xlab = "Sample Mean", ylab = "Density")
+mapply(lines, sims_mean_df_den, col = 1:length(sims_mean_df_den))
+legend("topright", legend = names(sims_mean_df_den), fill = 1:length(sims_mean_df_den))
+```
+
+Do not worry about how the graph is plotted, as we will talk about it again later in the course. What I want you to focus on is the distribution of the means under each category. We can observe that, as the number of observation in each sample grows from 5 to 100, the distributed of the sample mean becomes more centered around 5. We know that 5 is the true mean of the population, and therefore by LLN is should also be the true mean of the distribution of the sample mean. This shows how LLN works - as the number of observation increases, the sample mean gets closer to the true value.
+
+# Central Limit Theorem
+
+The Central Limit Theorem (CLT) states that for a random sample with (nearly) any distribution, with mean $\mu$ and variance $\sigma^2$, approximately $\bar{X} \sim N(\mu, \frac{\sigma^2}{n})$ when n is sufficiently large. We can already observe this with the graph above - as n increases, the distribution of the sample mean becomes more and more like a normal distribution with a shrinking variance. We can also check the absolute deviation of the variance:
+
+```{r}
+set.seed(1)
+abs((var(sims_mean_df$sims_5)/5) - 1/5)
+abs((var(sims_mean_df$sims_20)/20) - 1/20)
+abs((var(sims_mean_df$sims_100)/100) - 1/100)
+```
+
+However, we may quickly realize that this is not as impressive as it seems, given how the distribution we drew the sample from is already normal. Let us verify the CLT with a different dataset that is not artificially designed to be normal.
+
+We will invite our good old friend `nycflights13` again:
+
+```{r}
+library(nycflights13)
+flights <- na.omit(flights)
+```
+
+First, let's assume that the departure and arrival delay of flights are IID. We first plot `dep_delay` of the whole population and see how it is distributed:
+
+```{r}
+hist(flights$dep_delay, freq = FALSE,
+     main = "Histogram of Departure Delay",
+     xlab = "Departure Delay")
+```
+
+This clearly does not look like a normal distribution. But for CLT, we are not interested in the distribution of the population. Rather, we focus on the sample mean. Let's do the same analysis on the sample mean as in the section on LLN:
+
+```{r}
+random_100 <- function(x){
+  random <- sample(1:length(flights$dep_delay), 100)
+  x[random]
+}
+random_1000 <- function(x){
+  random <- sample(1:length(flights$dep_delay), 1000)
+  x[random]
+}
+random_10000 <- function(x){
+  random <- sample(1:length(flights$dep_delay), 10000)
+  x[random]
+}
+flights_mean_df <- data.frame(mean_100 = replicate(10000, expr = mean(random_100(flights$dep_delay))),
+                              mean_1000 = replicate(10000, expr = mean(random_1000(flights$dep_delay))),
+                              mean_10000 = replicate(10000, expr = mean(random_10000(flights$dep_delay))))
+flights_mean_df_den <- apply(flights_mean_df, 2, density)
+names(flights_mean_df_den) <- c("Sample with n=100", "Sample with n=1000", "Sample with n=10000")
+plot(NA, xlim=range(sapply(flights_mean_df_den, "[", "x")), ylim=range(sapply(flights_mean_df_den, "[", "y")), xlab = "Sample Mean of Departure Delay", ylab = "Density")
+mapply(lines, flights_mean_df_den, col = 1:length(flights_mean_df_den))
+legend("topright", legend = names(flights_mean_df_den), fill = 1:length(flights_mean_df_den))
+```
+
+What we did was we randomly drew 100, 1000 and 10,000 observations from the flights dataset, measure the mean, replicate it 10,000 times, and then plotted the distribution of the sample mean. We can clearly see that as the sample size increases from 100 to 10,000, the distribution of the sample mean becomes closer to that of a normal distribution, while the variance shrinks (as expected). If we take the mean of the entire population as the true mean, it should be:
+
+```{r}
+mean(flights$dep_delay)
+```
+
+And this is where the sample mean is centered around. You may actually wonder if the samples are indeed IID, given that we talked about the potential correlation between the departure delay of the current and previous flights in the homework. But we are also told that more general versions of CLT exits, so let us not worry about it for now.

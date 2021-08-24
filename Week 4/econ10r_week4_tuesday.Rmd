@@ -1,0 +1,203 @@
+---
+title: "Econ 10R Week 4 Tuesday - Midterm Solutions"
+author: "Luke Zhang"
+output:
+  html_document:
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(tidyverse)
+library(lubridate)
+```
+
+# Question 1 (3pts)
+
+1. Load and store the `college.csv` dataset in R. (1pt)
+
+```{r}
+college <- read.csv("college.csv")
+```
+
+2. Rename the first column `X` to `College`. (1pt)
+
+```{r}
+colnames(college)[1] <- "College"
+```
+
+3. Separate the colleges into private and non-private, each with its own data frame. (1pt)
+
+```{r}
+unique(college$Private)
+college_private <- filter(college, Private == "Yes")
+college_nonprivate <- filter(college, Private == "No")
+head(college_private)
+head(college_nonprivate)
+```
+
+# Question 2 (7pts)
+
+1. Find the college with the highest estimated book cost. (1pt)
+
+```{r}
+head(arrange(college, desc(Books))[, c("College", "Books")])
+```
+
+It is the Center for Creative Studies with 2340 dollars.
+
+2. For both private and non-private colleges, find the one that has the highest percentage of faculty with Ph.D.’s. What is weird about the result? (2pts)
+
+```{r}
+head(arrange(college_private, desc(PhD))[, c("College", "PhD")], 10)
+head(arrange(college_nonprivate, desc(PhD))[, c("College", "PhD")], 10)
+```
+
+Several colleges tie for private colleges, and Texas A&M University at Galveston is the highest for non-private. The latter has a percentage that is higher than 100, which is strange.
+
+3. Find the college with the highest and the lowest acceptance rate. (2pts)
+
+```{r}
+college_accept <- mutate(college, AcceptRate = Accept / Apps)
+head(arrange(college_accept, desc(AcceptRate))[, c("College", "Apps", "Accept", "AcceptRate")], 10)
+head(arrange(college_accept, AcceptRate)[, c("College", "Apps", "Accept", "AcceptRate")], 10)
+```
+
+Several colleges tie for the highest acceptance rate. Princeton has the lowest rate.
+
+4. Find the college that has the lowest graduation rate among all colleges with the full word "California" in their names. (2pts)
+
+```{r}
+college_cal <- filter(college, str_detect(College, "California"))
+arrange(college_cal, Grad.Rate)[, c("College", "Grad.Rate")]
+```
+
+We can use the `str_detect` function of R. It looks like Southern California College has the lowest graduation rate.
+
+# Question 3 (10pts)
+
+1. Load and store the `air.csv` dataset in R. (1pt)
+
+```{r}
+air <- read.csv("air.csv")
+```
+
+2. Using information in `date`, generate three variables for each observation: `year`, `month`, `day`. (2pts)
+
+```{r}
+air <- separate(air, date, into = c("year", "month", "day"), sep = c(4, 6), remove = FALSE)
+head(select(air, year, month, day))
+```
+
+Alternatively, using functions from the `lubricate` package:
+
+```{r}
+air <- read.csv("air.csv")
+air$date_format <- as.Date(as.character(air$date), format = "%Y%m%d")
+air <- mutate(air, 
+              year = year(date_format),
+              month = month(date_format),
+              day = day(date_format))
+head(select(air, year, month, day))
+```
+
+3. Which station has the highest average AQI (worst air quality) across all dates? (1pt)
+
+```{r}
+head(arrange(summarise(group_by(air, station), count = n(), average_AQI = mean(AQI, na.rm = TRUE)), desc(average_AQI)))
+```
+
+Clearly station 2700A has the worst average AQI.
+
+4. For each station, find the dates with the best and worst air qualities (indicated by the AQI). Store these observations in a single, new data frame. (2pts)
+
+```{r}
+air_extrema <- filter(group_by(air, station), 
+                      AQI == min(AQI, na.rm = TRUE) | AQI == max(AQI, na.rm = TRUE))[, c("station", "year", "month", "day", "AQI")]
+head(arrange(air_extrema, station, AQI), 10)
+```
+
+Alternatively, we can use the `rbind` function to do things separately:
+
+```{r}
+air_max <- filter(group_by(air, station), AQI == max(AQI, na.rm = TRUE))
+air_min <- filter(group_by(air, station), AQI == min(AQI, na.rm = TRUE))
+air_extrema <- arrange(rbind(air_max, air_min), station, AQI, year, month, day)[, c("station", "year", "month", "day", "AQI")]
+head(air_extrema, 10)
+```
+
+5. What is the relationship between air qualities across two consecutive days? Find the correlation coefficient, and plot the relationship. Bonus point if the graph looks great. (2pts)
+
+```{r}
+air_lag <- mutate(group_by(air, station), AQI_lag = lag(AQI))
+air_lag <- filter(air_lag, AQI != "NA" & AQI_lag != "NA")
+cor(air_lag$AQI, air_lag$AQI_lag)
+air_lag <- summarise(group_by(air_lag, AQI_lag),
+                          AQI_mean = mean(AQI))
+ggplot(data = air_lag, aes(x = AQI_lag, y = AQI_mean)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(title = "Correlation Between AQI Across Two Consecutive Days",
+       x = "AQI", y = "Average AQI Tomorrow Conditional on AQI Today")
+```
+
+6. For each unique date, find the station with the highest index of each of the six pollutants (note that this does not include `AQI`). Store the data in a data frame with the format where each date is an observation, each pollutant a variable, and the values of the variables are the station number. If there are multiple stations with the same index for the same pollutant on the same day, just pick whichever one you want as the value for that variable. (2pts)
+
+```{r}
+CO <- arrange(filter(group_by(air, date), CO_24h == max(CO_24h, na.rm = TRUE))[, c(1, 2)], date)
+colnames(CO)[1] <- "CO"
+
+NO2 <- arrange(filter(group_by(air, date), NO2_24h == max(NO2_24h, na.rm = TRUE))[, c(1, 2)], date)
+colnames(NO2)[1] <- "NO2"
+
+O3 <- arrange(filter(group_by(air, date), O3_24h == max(O3_24h, na.rm = TRUE))[, c(1, 2)], date)
+colnames(O3)[1] <- "O3"
+
+PM10 <- arrange(filter(group_by(air, date), PM10_24h == max(PM10_24h, na.rm = TRUE))[, c(1, 2)], date)
+colnames(PM10)[1] <- "PM10"
+
+PM2.5 <- arrange(filter(group_by(air, date), PM2.5_24h == max(PM2.5_24h, na.rm = TRUE))[, c(1, 2)], date)
+colnames(PM2.5)[1] <- "PM2.5"
+
+SO2 <- arrange(filter(group_by(air, date), SO2_24h == max(SO2_24h, na.rm = TRUE))[, c(1, 2)], date)
+colnames(SO2)[1] <- "SO2"
+
+air_date <- summarise(group_by(air, date), count = n())[, 1]
+
+air_index <- left_join(air_date, CO, by = "date") %>% 
+  left_join(., NO2, by = "date") %>% 
+  left_join(., O3, by = "date") %>% 
+  left_join(., PM10, by = "date") %>% 
+  left_join(., PM2.5, by = "date") %>% 
+  left_join(., SO2, by = "date")
+
+air_index <- air_index[!duplicated(air_index$date), ]
+head(air_index, 10)
+```
+
+Alternatively, we can use the `pivot` function:
+
+```{r}
+CO <- arrange(filter(group_by(air, date), CO_24h == max(CO_24h, na.rm = TRUE))[, c(1, 2)], date)
+CO <- mutate(CO, pollu = "CO")[!duplicated(CO$date), ]
+
+NO2 <- arrange(filter(group_by(air, date), NO2_24h == max(NO2_24h, na.rm = TRUE))[, c(1, 2)], date)
+NO2 <- mutate(NO2, pollu = "NO2")[!duplicated(NO2$date), ]
+
+O3 <- arrange(filter(group_by(air, date), O3_24h == max(O3_24h, na.rm = TRUE))[, c(1, 2)], date)
+O3 <- mutate(O3, pollu = "O3")[!duplicated(O3$date), ]
+
+PM10 <- arrange(filter(group_by(air, date), PM10_24h == max(PM10_24h, na.rm = TRUE))[, c(1, 2)], date)
+PM10 <- mutate(PM10, pollu = "PM10")[!duplicated(PM10$date), ]
+
+PM2.5 <- arrange(filter(group_by(air, date), PM2.5_24h == max(PM2.5_24h, na.rm = TRUE))[, c(1, 2)], date)
+PM2.5 <- mutate(PM2.5, pollu = "PM2.5")[!duplicated(PM2.5$date), ]
+
+SO2 <- arrange(filter(group_by(air, date), SO2_24h == max(SO2_24h, na.rm = TRUE))[, c(1, 2)], date)
+SO2 <- mutate(SO2, pollu = "SO2")[!duplicated(SO2$date), ]
+
+air_index2 <- select(arrange(rbind(CO, NO2, O3, PM10, PM2.5, SO2), date), date, station, pollu)
+
+head(pivot_wider(air_index2, names_from = "pollu", values_from = "station"), 10)
+```

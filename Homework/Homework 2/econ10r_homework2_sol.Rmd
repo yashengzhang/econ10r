@@ -74,7 +74,7 @@ flights_two <- filter(flights_two, n_carriers > 1)
 unique(flights_two$dest)
 ```
 
-Here are all the destinations being served by more than two carriers. We first created a new variables for each `dest` that records the number of unique carriers. Then we filtered out the flights with a destination that is served by more than one carrier. Finally, we can list the destinations by asking R to tell us all the unique values of the variable `dest` in the filtered data frame.
+Here are all the destinations being served by more than two carriers. We first created a new variables for each `dest` that records the number of unique carriers for that destination. Then we filtered out the destinations that are served by more than one carrier. Finally, we can list the destinations by asking R to tell us all the unique values of the variable `dest` in the filtered data frame.
 
 ## Question 2b
 
@@ -90,7 +90,7 @@ We set the unit of analysis to `dest`, the counted each destination's number of 
 
 So we found two airports that got served the least. If you look carefully at the dataset, you will notice that `LGA` is actually LaGuardia, which is in NYC. The flight was between Newark and LaGuardia, so it is likely a diversion. Therefore `LEX` is truly the least served airport.
 
-Question 2c
+## Question 2c
 
 To get the most popular destination in the summer, we can apply functions similar to the previous questions:
 

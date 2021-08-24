@@ -269,7 +269,7 @@ unique(flights_two$dest)</code></pre>
 ## [49] &quot;STT&quot; &quot;EGE&quot; &quot;AVL&quot; &quot;PWM&quot; &quot;IND&quot; &quot;HOU&quot; &quot;DAY&quot; &quot;BDL&quot; &quot;MHT&quot; &quot;MSN&quot; &quot;GSO&quot; &quot;CVG&quot;
 ## [61] &quot;RIC&quot; &quot;GSP&quot; &quot;GRR&quot; &quot;MCI&quot; &quot;ORF&quot; &quot;SAT&quot; &quot;SDF&quot; &quot;PDX&quot; &quot;SJC&quot; &quot;OMA&quot; &quot;TYS&quot; &quot;DSM&quot;
 ## [73] &quot;CAE&quot; &quot;BGR&quot; &quot;MVY&quot; &quot;TVC&quot;</code></pre>
-<p>Here are all the destinations being served by more than two carriers. We first created a new variables for each <code>dest</code> that records the number of unique carriers. Then we filtered out the flights with a destination that is served by more than one carrier. Finally, we can list the destinations by asking R to tell us all the unique values of the variable <code>dest</code> in the filtered data frame.</p>
+<p>Here are all the destinations being served by more than two carriers. We first created a new variables for each <code>dest</code> that records the number of unique carriers for that destination. Then we filtered out the destinations that are served by more than one carrier. Finally, we can list the destinations by asking R to tell us all the unique values of the variable <code>dest</code> in the filtered data frame.</p>
 </div>
 <div id="question-2b" class="section level2">
 <h2>Question 2b</h2>
@@ -294,7 +294,9 @@ select(flights_least, year, month, day, dest)</code></pre>
 ## # … with 336,766 more rows</code></pre>
 <p>We set the unit of analysis to <code>dest</code>, the counted each destination’s number of appearance in the data. We can then arranged the rows by the value of <code>count</code> in ascending order.</p>
 <p>So we found two airports that got served the least. If you look carefully at the dataset, you will notice that <code>LGA</code> is actually LaGuardia, which is in NYC. The flight was between Newark and LaGuardia, so it is likely a diversion. Therefore <code>LEX</code> is truly the least served airport.</p>
-<p>Question 2c</p>
+</div>
+<div id="question-2c" class="section level2">
+<h2>Question 2c</h2>
 <p>To get the most popular destination in the summer, we can apply functions similar to the previous questions:</p>
 <pre class="r"><code>flights_summer &lt;- filter(flights, 
                          month == 6 | month == 7 | month == 8)

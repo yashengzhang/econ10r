@@ -1,0 +1,57 @@
+---
+title: "Econ 10R Week 4"
+author: "Luke Zhang"
+output:
+  html_document:
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Functions in R
+
+There are many functions in R, and we have seen and used many of them like `mean`, `median` and `var`. We have even written our own functions. Today we will be going through more details on functions and their applications.
+
+Most basic functions in R are easy to use - just write out the function's name, for example, `mean`, and follow it up with what we call an argument. The argument is the input in the bracket that follows the function, and it can be raw data, an R object, or results from other functions. For example:
+
+```{r}
+die <- 1:6
+mean(1:6)
+mean(die)
+round(mean(die))
+```
+
+The function `round` returns the rounded number. It is clear that R resolves the functions of the inner most bracket first, and then move on to the outer ones.
+
+Previously, we talked about a die using the `sample` function. It is quite easy to do in one step:
+
+```{r}
+sample(die, 1)
+```
+
+Or alternatively
+
+```{r}
+sample(1:6, 1)
+```
+
+Now, suppose we wish to roll the die twice in a row, we can try the following:
+
+```{r}
+sample(die, 2)
+```
+
+It seems fine at first, but you will quickly notice that the two numbers will never be the same, and this is wrong - if you roll the dice enough times, you will end up with the same number sooner or later. The reason is that `sample` has set replacement to `FALSE`, so that when the function rolls a number, it does not replace the number rolled - instead it is taken away from the set so that it will not appear again. Clearly we do not want this, so we will now try sampling with replacement.
+
+## Sample with Replacement
+
+The easiest way to add replacement in the example above is to do the following:
+
+```{r}
+sample(die, size = 2, replace = TRUE)
+```
+
+Adding `replace = True` tells R to put the number back into the set after the first roll, so that it is now possible to draw the same number again in the second row.

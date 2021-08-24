@@ -1,0 +1,414 @@
+---
+title: "Econ 10R Part 2: Random Variables and Sampling"
+author: "Luke Zhang"
+date: August 18, 2021
+output:
+  html_document:
+    number_sections: true
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+*This file contains all the materials on the topics of random variables and sampling, and compliments the content on the lecture slides. It covers the classes from week 2 Thursday to week 3 Tuesday (inclusive). Last update: August 18, 2021*
+
+# Central Tendency
+
+In this section we will use R to present some descriptive statistics. First, we need to load a dataset that has sufficiently interesting random variables. The `flights` data are actually quite good for this purpose. Let us load the library and data first:
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+```
+
+Now we can use the `flights` data whenever we want:
+
+```{r}
+flights_clean <- na.omit(flights)
+flights_clean
+```
+
+Now that we have the dataset stored (and missing values taken out), we can perform some calculations to generate the descriptive statistics we want.
+
+## Mean
+
+There are several ways to get the mean (as usual). First of all, we can sum the numbers and divide it by the number of observations. For example, suppose I wish to know the average departure delay, I can do the following:
+
+```{r}
+sum(flights_clean$dep_delay) / summarise(flights_clean, count = n())
+```
+
+I summed the departure delay across all flights and divided by the number of flights in the data. Since we already removed all the missing values, we do not need to include `na.rm = TRUE`.
+
+Another way is to directly use the `mean` command:
+
+```{r}
+mean(flights_clean$dep_delay)
+```
+
+Clearly the second way is more intuitive and easier. We can also generate the mean for each date, just like how we did it in the last part:
+
+```{r}
+summarise(group_by(flights_clean, year, month, day), count = n(), dep_delay_mean = mean(dep_delay))
+```
+
+However, we should note that it is meaningless to get the mean of some other variables, for example, `dest`:
+
+```{r eval=FALSE, include=TRUE}
+mean(flights_clean$dest)
+```
+
+This is because values in `dest` are not numerical values, and even if they are, it would still not make sense to take the mean. For instance, variables like `day` can have a numerical mean, but it is very questionable what it represents.
+
+## Median
+
+We can also manually get the median of departure delays, but it will be unnecessarily tedious. Instead, we can apply the `median` command directly:
+
+```{r}
+median(flights_clean$dep_delay)
+```
+
+Now, the median is more meaningful for some variables than the mean. For instance:
+
+```{r}
+median(flights_clean$dep_time)
+```
+
+It is quite meaningless to talk about the average departure time, but for the median, it tells us that half of the flights departed before 2pm and the other half departed after 2pm. Note that this is not a case where median is "better" than the mean, rather, it highlights the difference between the two measures and the fact that they can serve different purposes.
+
+## Trimmed Mean
+
+We talked about in class how the mean can be sensitive to outliers (extreme values). They may skew the mean toward one end or the other. In these cases, we may switch to the median. But if you still wish to make use of the mean, we can take another approach called "trimmed mean". Basically, we will drop the observations that are considered outliers. For example, suppose we want to drop all values that are at the top and bottom 1%, we can use the following command:
+
+```{r}
+mean(flights_clean$dep_delay, trim = 0.01)
+```
+
+We see that the mean falls by about 2 minutes. This suggests that there are some large outliers in the original dataset. Although this approach can be useful, you will need to justify dropping those extreme observations. In general, we want to use as many observations and as much information as possible, but by doing this, we lose a lot of information about the sample.
+
+## Mode
+
+Mode is the value that comes up most frequently in the dataset. R does not have a default option to get the mode, as the word itself has so many meanings that if you just type `mode` it will return you a different thing (the type of the object). We can get the mode of a variable by a function in the `lsr` package. Let use install the package:
+
+```{r eval=FALSE, include=TRUE}
+install.packages("lsr")
+```
+
+Then load the library:
+
+```{r}
+library("lsr")
+```
+
+Then we can apply the `modeOf` function to get the mode:
+
+```{r}
+modeOf(flights_clean$dest)
+```
+
+We see that the most popular destination from New York City is Atlanta, the busiest airport in the US, so no surprise there. We can also generate the most flown airline:
+
+```{r}
+modeOf(flights_clean$carrier)
+```
+
+It turns out to be United Airlines. You can also get the mode of things like departure delays:
+
+```{r}
+modeOf(flights_clean$dep_delay)
+```
+
+But this is not particularly useful compared to the mean. Now that we have looked at the mean, the median and the mode, let's move on to discuss measures of dispersion.
+
+# Measure of Dispersion
+
+We talked about several measures of dispersion in class - range, standard deviation, quartiles and interquartile range. In this section we will generate them using R.
+
+## Variance and Standard Deviations
+
+R has built-in commands to get the variance and the standard deviation given how important they are:
+
+```{r}
+var(flights_clean$dep_delay)
+sd(flights_clean$dep_delay)
+```
+
+One thing to note here. When R calculates variance and standard deviations, it actually calculates the *sample variance* and the *sample standard deviation* (also know as the *standard error*). This is what the `N - 1` does in our slides. It is not a problem for us since sample variance and standard error are what we want. Basically, the "true" or population variance and standard deviation use `N`, while the sample analogue use `N - 1`. The reason is related to the fact that using `N - 1` gives the sample variance and the standard error a nice property called unbiasedness. You will learn this in a full statistics or econometrics class, but right now you just need to be aware of it.
+
+## Range
+
+We can get the range of a variable by subtracting the minimum value from the maximum value:
+
+```{r}
+max(flights_clean$dep_delay) - min(flights_clean$dep_delay)
+```
+
+Or alternatively, R provides us with a specific code to do it:
+
+```{r}
+range(flights_clean$dep_delay)
+```
+
+This command does not do the subtraction for you, but it gives useful information in one command Again, range only makes sense for certain variables, like `distance` and `arr_delay`, but not others like `dest`, `carrier` or even `dep_time`.
+
+## Quantiles
+
+To get the quantiles, we can use the following command:
+
+```{r}
+quantile(flights_clean$dep_delay, probs = 0.5)
+```
+
+This is exactly the median, and it is because we are asking for the 50% quantile. We can pick any number we like:
+
+```{r}
+quantile(flights_clean$dep_delay, probs = 0.71)
+```
+
+We can also return the interquartile range by including two numbers in `probs`:
+
+```{r}
+quantile(flights_clean$dep_delay, probs = c(0.25, 0.75))
+```
+
+And again we can pick any numbers we like. Alternatively, we can get the interquartile range with one specific command:
+
+```{r}
+IQR(flights_clean$dep_delay)
+```
+
+This gives us the result right away, though this information is not as useful compared to the previous result using `probs`.
+
+# Correlation
+
+So far we have only discussed descriptive statistics for a single variable. Now we can look at correlations between two variables.
+
+## Covariance and Correlation
+
+We can find the covariance between any two numerical variables. However, it would not be very interesting unless we have a good reason why their covariance may be meaningful. Fortunately for us, the `flight` dataset has two variables whose correlation deserves to be studied - `dep_delay` and `arr_delay`. In order to calculate covariance between these two variables, we can use the following function:
+
+```{r}
+cov(flights_clean$dep_delay, flights_clean$arr_delay)
+```
+
+But we know that covariance is not very easy to interpret on its own. We can get a more useful result by calculating the correlation coefficient:
+
+```{r}
+cor(flights_clean$dep_delay, flights_clean$arr_delay)
+```
+
+This is a nice result - the correlation is very high (close to 1) and this is to be expected. If departure gets delayed by a lot, then it is very likely that arrival will also be delayed by a lot. After all there are only limited gains you can make in the air.
+
+## Visualize Correlation
+
+Let us try to visualize the correlation between the two variables using a graph. The package `tidyverse` has a function `ggplot` that is designed specifically to make nice graphs in R. Let us take a look at one example:
+
+```{r}
+ggplot(data = flights_clean, aes(x = dep_delay, y = arr_delay, color = carrier)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(title = "Correlation Between Departure and Arrival Delays",
+       x = "Departure Delays", y = "Arrival Delays")
+```
+
+We plotted departure and arrival delays with a scatter plot, and separated the points by color according to their carriers. We then added a linear fit (the correlation coefficient) for each of the carriers. If you wish to ignore the carriers and simply look at the total effects, then just remove `color = carrier`.
+
+You can play around with the graph as much as you want. Check R Help or the Internet for different options under each command. You should be able to make even better graphs than the one here.
+
+# Sampling Distribution
+
+In this section, we will move on from descriptive statistics to talk about sampling distribution - the distributions of the observations and their associated statistics.
+
+In class, we had two samples of size 20 from a normal distribution with mean 5 and variance 1, i.e., $X \sim N(5, 1)$. We calculated some sample statistics for both, but it is no where near enough to get the sampling distribution (of the mean or the variance) with just two samples. Let us now us R to simulate 10,000 samples and calculate the sample statistics for each sample. Then we can plot the sampling distributions and see how they look.
+
+Let's first try simulating one sample of size 20:
+
+```{r}
+normal1 <- rnorm(20, mean = 5, sd = 1)
+normal1
+```
+
+You may notice that each time we run the same code, we will get a different result. This is not surprising given that we can simulating random numbers. However, sometimes you will want to keep the same numbers so it is easier to replicate the results or do further analysis with them. We can use `set.seed()` to achieve that:
+
+```{r}
+set.seed(1)
+normal2 <- rnorm(20, mean = 5, sd = 1)
+normal2
+```
+
+You can put any number in `set.seed()`. If you run this code again and again, you will see that the numbers returned are always the same. They are still random numbers, but they just do not change between each execution of the code.
+
+Next, we can use `replicate` to simulate the random sample for 10,000 times:
+
+```{r}
+set.seed(1)
+sims1 <- replicate(10000, expr = rnorm(20, mean = 5, sd = 1))
+```
+
+You can check what the simulated numbers look like by clicking `sims1` in the environment (it will take up far too much space to check here). We can achieve the same result by using a `for()` loop:
+
+```{r}
+set.seed(1)
+list1 <- list()
+for (i in 1:10000) {
+  list1[[i]] = rnorm(20, mean = 5, sd = 1)
+}
+```
+
+Again, you can check the numbers by clicking `list1`. For the double square brackets, the first layer indicates that we are talking about an element in `list1`, and the second, inner layer emphasizes the index `i`. Now let us move on to get the sampling distribution of some statistics.
+
+## Sample Mean
+
+We already learned that we can use `mean` to get the mean of a vector. It works similarly with each simulation. For example, we can generate the sample mean of all 10,000 samples using the following command:
+
+```{r}
+set.seed(1)
+sims1_mean <- replicate(10000, mean(rnorm(20, mean = 5, sd = 1)))
+head(sims1_mean)
+```
+
+Note that `head` is asking R to show only the first few lines. Now that we have simulated 10,000 sample means, each one of them a statistic (a function of observations), what does the sampling distribution of the sample mean look like? Well, let's try to plot them in a histogram and see what happens:
+
+```{r}
+hist(sims1_mean,
+     freq = FALSE,
+     main = "Sampling Distribution of Sample Means", xlab = "Simulated Sample Means")
+lines(density(sims1_mean), col = "black")
+```
+
+The sample means are centered around the true population mean, 5, and is not too widespread - most of them fall between 4.5 and 5.5. Also, if we check the density curve, this looks like a Bell curve. We will come back to this later.
+
+## Sample Variance
+
+We can do the same for the sample variance:
+
+```{r}
+set.seed(1)
+sims1_var <- replicate(10000, expr = var(rnorm(20, mean = 5, sd = 1)))
+head(sims1_var)
+```
+
+Plot them using a histogram:
+
+```{r}
+hist(sims1_var,
+     freq = FALSE,
+     main = "Sampling Distribution of Sample Variance", xlab = "Simulated Sample Variances")
+lines(density(sims1_var), col = "black")
+```
+
+The sample variances still center around the population variance, 1. They are more widespread compared to the mean, and the resulting density curve looks less like a Bell curve.
+
+## Sample Maximum
+
+Doing the same for the sample maximum:
+
+```{r}
+set.seed(1)
+sims1_max <- replicate(10000, expr = max(rnorm(20, mean = 5, sd = 1)))
+hist(sims1_max,
+     freq = FALSE,
+     main = "Sampling Distribution of Sample Maximum", xlab = "Simulated Sample Maxima")
+lines(density(sims1_max), col = "black")
+```
+
+Clearly the maximum are way above the population mean, 5. It is also very widespread, and the density curve also looks like a Bell curve, but not as much as the density curve for the mean.
+
+# Law of Large Numbers
+
+The Law of Large Numbers (LLN) suggests that, as the sample size grows, the sample mean gets closer to the average of the whole population. How do we show this with simulations? Well, we can change the number of observation in a single simulation and see what happens to the mean. In order to see them more clearly, let us make use of the mean absolute deviation - subtract the true mean, 5, from the observed sample mean, and then taking the absolute value for the sake of comparison:
+
+```{r}
+set.seed(1)
+abs(mean(rnorm(20, mean = 5, sd = 1)) - 5)
+abs(mean(rnorm(50, mean = 5, sd = 1)) - 5)
+abs(mean(rnorm(100, mean = 5, sd = 1)) - 5)
+abs(mean(rnorm(1000, mean = 5, sd = 1)) - 5)
+abs(mean(rnorm(10000, mean = 5, sd = 1)) - 5)
+abs(mean(rnorm(100000, mean = 5, sd = 1)) - 5)
+```
+
+We can clearly see that as the number of observation increases, the mean absolute deviation shrinks. This shows LLN at works - as we gather more data, the sample mean gets closer and closer to the true mean! We can also observe it through another way:
+
+```{r}
+set.seed(1)
+sims_mean_df <- data.frame(sims_5 = replicate(10000, expr = mean(rnorm(5, mean = 5, sd = 1))),
+                           sims_20 = replicate(10000, expr = mean(rnorm(20, mean = 5, sd = 1))),
+                           sims_100 = replicate(10000, expr = mean(rnorm(100, mean = 5, sd = 1))))
+sims_mean_df_den <- apply(sims_mean_df, 2, density)
+names(sims_mean_df_den) <- c("Sims with n=5", "Sims with n=20", "Sims with n=100")
+plot(NA, xlim=range(sapply(sims_mean_df_den, "[", "x")), ylim=range(sapply(sims_mean_df_den, "[", "y")), xlab = "Sample Mean", ylab = "Density")
+mapply(lines, sims_mean_df_den, col = 1:length(sims_mean_df_den))
+legend("topright", legend = names(sims_mean_df_den), fill = 1:length(sims_mean_df_den))
+```
+
+Do not worry about how the graph is plotted, as we will talk about it again later in the course. What I want you to focus on is the distribution of the means under each category. We can observe that, as the number of observation in each sample grows from 5 to 100, the distribution of the sample mean becomes more centered around 5. We know that 5 is the true mean of the population, and therefore by LLN is should also be the true mean of the distribution of the sample mean. This shows how LLN works - as the number of observation increases, more and more sample means are staying very close to the true mean.
+
+# Central Limit Theorem
+
+You may have guess that the reason why the density curves of the sample means above look like the Bell curve a lot. It is indeed because of the Central Limit Theorem (CLT), which states that for a random sample with (nearly) any distribution, with mean $\mu$ and variance $\sigma^2$, approximately $\bar{X} \sim N(\mu, \frac{\sigma^2}{n})$ when n is sufficiently large. We can already observe this with the graph above - as n increases, the distribution of the sample mean becomes more and more like a normal distribution with a shrinking variance. We can also check the absolute deviation of the variance:
+
+```{r}
+set.seed(1)
+abs(var(sims_mean_df$sims_5)/5 - 1/5)
+abs(var(sims_mean_df$sims_20)/20 - 1/20)
+abs(var(sims_mean_df$sims_100)/100 - 1/100)
+```
+
+However, we may quickly realize that this is not as impressive as it seems, given that the distribution we drew the sample from is already normal. Let us verify the CLT with a different dataset that is not artificially designed to be normal.
+
+We will invite our good old friend `nycflights13` again:
+
+```{r}
+library(nycflights13)
+flights <- na.omit(flights)
+```
+
+First, let's assume that the departure and arrival delay of flights are IID. We first plot `dep_delay` of the whole population and see how it is distributed:
+
+```{r}
+hist(flights$dep_delay,
+     freq = FALSE,
+     main = "Histogram of Departure Delays",
+     xlab = "Departure Delays")
+```
+
+This clearly does not look like a normal distribution. But for CLT, we are not interested in the distribution of the population or even the sample. Rather, we focus on the sample mean. Let's do the same analysis on the sample mean as in the section on LLN:
+
+```{r}
+random_100 <- function(x) {
+  random <- sample(1:length(flights$dep_delay), 100)
+  x[random]
+}
+random_1000 <- function(x) {
+  random <- sample(1:length(flights$dep_delay), 1000)
+  x[random]
+}
+random_10000 <- function(x) {
+  random <- sample(1:length(flights$dep_delay), 10000)
+  x[random]
+}
+flights_mean_df <- data.frame(mean_100 = replicate(10000, expr = mean(random_100(flights$dep_delay))),
+                              mean_1000 = replicate(10000, expr = mean(random_1000(flights$dep_delay))),
+                              mean_10000 = replicate(10000, expr = mean(random_10000(flights$dep_delay))))
+flights_mean_df_den <- apply(flights_mean_df, 2, density)
+names(flights_mean_df_den) <- c("Sample with n=100", "Sample with n=1000", "Sample with n=10000")
+plot(NA, xlim=range(sapply(flights_mean_df_den, "[", "x")), ylim=range(sapply(flights_mean_df_den, "[", "y")), xlab = "Sample Mean of Departure Delays", ylab = "Density")
+mapply(lines, flights_mean_df_den, col = 1:length(flights_mean_df_den))
+legend("topright", legend = names(flights_mean_df_den), fill = 1:length(flights_mean_df_den))
+```
+
+What we did was we randomly drew 100, 1000 and 10,000 observations from the flights dataset, measured the mean, replicated this process 10,000 times for each sample size, and then plotted the distribution of the sample mean. We can clearly see that as the sample size increases from 100 to 10,000, the distribution of the sample mean becomes closer to that of a normal distribution, while the variance shrinks (as expected, as CLT states that the variance is $1/n$). If we take the mean of the entire population as the true mean, it should be:
+
+```{r}
+mean(flights$dep_delay)
+```
+
+And this is where the sample mean is centered around. You may actually wonder if the samples are indeed IID, given that we talked about the potential correlation between departure delays of the current and previous flights in the homework. But we are also told that more general versions of CLT exits, so let us not worry about it for now.
+
+# Conclusion
+
+In this part of the course, we used R to generate some simple descriptive statistics of a variable, and then discussed how these statistics are distributed. The coding part is not very difficult to understand, but the ideas presented in this section underpin most of what we will be doing in the next few parts. It is therefore very useful to be familiar with these materials.
