@@ -1,0 +1,72 @@
+---
+title: "Econ 10R Homework 3 Solutions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(tidyverse)
+```
+
+# Question 1
+
+Create a function that simulates numbers from a standard normal distribution. This function must be flexible enough so that you can set the number of replications to do and the sample size to simulate freely as you wish. Then run the simulation with 100 observations and 10,000 replications. When you present your results, show the first ten rows and first ten columns only. *Hint: Try to set the right number of arguments for this function. Also, results from functions are not stored in the environment (you can do it, but we don't need it for now), so do not worry if you don't see the data frame you created in the environment.*
+
+```{r}
+sim_norm <- function(x, y) {
+  replicate(x, expr = rnorm(y))
+}
+sim_norm(10000, 100)[1:10, 1:10]
+```
+
+# Question 2
+
+Create a function that simulates the sample mean of a random sample from a standard normal distribution. Plot the distribution of the sample mean returned by the function using a histogram with densities. (When plotting the graph, incorporate the function into `hist`, for example `hist(function(x, y, ...), ...)`.) You can set the number of replications and the sample size however you like. Remember to set the seed when necessary. Label your graph correctly. *Hint: This is close to replicating the graph from part 2 section 4.1 of the notes, only that we are sampling from slightly different distributions.*
+
+```{r}
+sim_norm_mean <- function(x, y) {
+  replicate(x, expr = mean(rnorm(y)))
+}
+set.seed(1)
+hist(sim_norm_mean(10000, 100),
+     freq = FALSE,
+     main = "Sampling Distribution of Sample Mean", xlab = "Simulated Sample Mean")
+lines(density(sim_norm_mean(10000, 100)), col = "black")
+```
+
+# Question 3 (Bonus question, try it if you are interested, no penalties if you don't)
+
+Choose three numbers as the sample size (e.g., 5, 20, 100), create a function that simulates the sample mean of a random sample from a standard normal distribution, and use `for` loop inside the function to loop over the three sample sizes you chose. Plot the distributions of the sample mean just like the one we did in part 2, section 5 of the notes. Again, you are free to choose the number of replications. Remember to set the seed when necessary. Label your graph correctly. *Hint: This is close to replicating the graph from part 2 section 5 of the notes, only that we are sampling from slightly different distributions. The function can incorporate everything, including the plotting part.*
+
+```{r}
+sim_norm_mean_multi <- function(x) {
+  size <- c(5, 20, 100)
+  sim_mean_df <- data.frame(matrix(nrow = x, ncol = length(size)))
+  for (i in seq_along(size)) {
+  sim_mean_df[[i]] <- replicate(x, expr = mean(rnorm(size[[i]])))
+  }
+  sim_mean_df
+}
+set.seed(1)
+sim_mean_df_den <- apply(sim_norm_mean_multi(10000), 2, density)
+names(sim_mean_df_den) <- c("Sims with n=5", "Sims with n=20", "Sims with n=100")
+plot(NA, xlim=range(sapply(sim_mean_df_den, "[", "x")), ylim=range(sapply(sim_mean_df_den, "[", "y")), xlab = "Sample Mean", ylab = "Density")
+mapply(lines, sim_mean_df_den, col = 1:length(sim_mean_df_den))
+legend("topright", legend = names(sim_mean_df_den), fill = 1:length(sim_mean_df_den))
+```
+
+# Question 4
+
+Simulate the sample mean of a random sample from the exponential distribution (look up the exponential distribution in R and on Google to get a rough understanding of it). Plot the distribution of the sample mean. You are free to pick your own parameters and the number of replications.
+
+```{r}
+expo <- function(x, y, z){
+  replicate(x, expr = mean(rexp(y, rate = z)))
+}
+hist(expo(10000, 100, 1),
+     freq = FALSE,
+     main = "Sampling Distribution of Sample Mean", xlab = "Simulated Sample Mean")
+lines(density(expo(10000, 100, 1)), col = "black")
+```
+
