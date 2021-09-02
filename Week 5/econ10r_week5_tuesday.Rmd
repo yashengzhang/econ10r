@@ -1,0 +1,125 @@
+---
+title: "Econ 10R Week 5"
+author: "Luke Zhang"
+output:
+  html_document:
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Estimation
+
+Let us start by generating a dataset that we can think of as a random sample from a known population:
+
+```{r}
+set.seed(1)
+v1 <- rnorm(20, mean = 14, sd = 5)
+head(v1)
+```
+
+Here we have a dataset that is sampled from a normal distribution of mean 14 and standard deviation 5. What is a good estimator for the population mean assume that we do not know it? As we said in class, it is the sample mean:
+
+```{r}
+mean(v1)
+```
+
+What about the sample variance? Well, recall that the formula for the sample variance is given by the sample variance divided by $n-1$, so we have
+
+```{r}
+var(v1)
+```
+
+Remember that R incorporates $n-1$ in `var` already. We can do a lot more estimation, but it is not very interesting right now compared to the estimation of linear models later. So let's leave it there fore now.
+
+# Hypothesis Testing
+
+Let's conduct a hypothesis testing where the null hypothesis is $H_0: \mu=17$ against $H_1: \mu \neq 17$.
+
+## Step 1 Form the Test Statistic
+
+Since we know that the sample is drawn from a normal distribution with a known variance, we know under the null the test statistic is of the following form:
+
+$$\frac{\bar{X}-17}{5/\sqrt{19}} \sim N(0, 1)$$
+
+We can compute the test statistic here:
+
+```{r}
+test <- (mean(v1)-17)/sqrt(25/19)
+test
+```
+
+
+## Step 2 Derive the $p$ value
+
+We can compute the $p$ value in R directly using the `pnorm` function:
+
+```{r}
+p_value <- pnorm(test, lower.tail = TRUE) + pnorm(-test, lower.tail = FALSE)
+p_value
+```
+
+The function `pnorm` returns the probability that the a given value is lower than `ttest` under the standard normal with `lower.tail = FALSE`. When `lower.tail = TRUE`, it calculates the probability greater than `ttest`. Therefore, in order to get the $p$ value for the two-sided test, we need to add them together.
+
+## Step 3 Compare to the Significance Level
+
+Now we need to choose a significance level $\alpha$ to make a comparison. Generally we use 5%, so by this standard, we do not reject the null hypothesis. This does not seem like a good result, as we know 17 is not the true mean.
+
+## Sample Size
+
+The problem here is that we have a small sample with a large variance. Let's increase the sample size and try again:
+
+```{r}
+v2 <- rnorm(100, mean = 14, sd = 5)
+test2 <- (mean(v2)-17)/sqrt(25/99)
+p_value2 <- pnorm(test2, lower.tail = TRUE) + pnorm(-test2, lower.tail = FALSE)
+p_value2
+```
+
+Now we can clearly reject the null hypothesis as the $p$ value is smaller than 5%. Increased sample size helped a lot.
+
+## Unknown Variance
+
+So far we have assumed that the variance is known. This does not seem like a very good assumption given that we are still wondering about the mean. If we drop this assumption, we will need to change the construction of the test statistic. It will no longer be normal, but rather a t distribution. We do not need to go into the detailed math, but we need to know how to conduct the test in R.
+
+Suppose we do not know the mean or the variance. Rather, we have the sample mean, the sample size, and the null hypothesis. What we can do is the following:
+
+```{r}
+t.test(x = v1, mu = 17)
+```
+
+Looks like it has a lot of useful information. We can see that R returned a $p$ value of 0.0594, which is greater than 0.05. Hence we do not reject the null hypothesis. Also, 17 is within the 95% confidence interval, so another way to say no reject. Next, let's increase the sample size:
+
+```{r}
+t.test(x = v2, mu = 17)
+```
+
+Again the rejection is easy, and 17 is also nowhere near the 95% confidence interval.
+
+# Two Sample Test
+
+So far we have tested sample statistics on distributions themselves. More commonly, we have two samples that we want to know if they have the same mean. The test statistic is again more complex and we do not need to know it here. Let's use the `v1` and `v2` we generated earlier. This time we are testing
+
+$$
+\begin{array}{ll}
+H_{0}: & \mu_{1}=\mu_{2} \\
+H_{1}: & \mu_{1} \neq \mu_{2}
+\end{array}
+$$
+
+We can use the following command:
+
+```{r}
+t.test(x = v1, y = v2, var.equal = TRUE)
+```
+
+So the result shows that we do not reject the null hypothesis. You may have noticed that I put `var.equal = TRUE`. This makes R assume that the two set of values have the same variance. While this is true by construction, in general we do not know this as we are even wondering if they have the same mean. So it is probably better to set it to `FALSE`:
+
+```{r}
+t.test(x = v1, y = v2, var.equal = FALSE)
+```
+
+Again we do not reject the null.
