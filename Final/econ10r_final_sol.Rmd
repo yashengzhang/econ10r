@@ -1,0 +1,227 @@
+---
+title: "Econ 10R Final Solutions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(tidyverse)
+library(fastDummies) ## Install the "fastDummies" package if you haven't already
+library(ISLR) ## Install the "ISLR" package if you haven't already
+library(car) ## Install the "car" package if you haven't already
+library(lmtest) ## Install the "car" package if you haven't already
+library(sandwich) ## Install the "car" package if you haven't already
+library(haven) ## Install the "car" package if you haven't already
+library(AER) ## Install the "car" package if you haven't already
+```
+
+*40pts in total*
+
+# Question 1 (5pts)
+
+Simulate the sample mean of a random sample from the uniform distribution (look up the uniform distribution in R and on Google to get a rough understanding of it). Plot the distribution of the sample mean. You are free to pick your own parameters and the number of replications. *There is no need to present the simulated data, showing the graph is enough.*
+
+```{r}
+set.seed(1)
+uniform <- function(x, n, y, z){
+  replicate(x, expr = mean(runif(n, min = y, max = z)))
+}
+hist(uniform(10000, 100, 0, 1),
+     freq = FALSE,
+     main = "Sampling Distribution of Sample Mean", xlab = "Simulated Sample Mean")
+lines(density(uniform(10000, 100, 0, 1)), col = "black")
+```
+
+# Question 2 (14pts)
+
+This question uses the `airq.dta` dataset.
+
+## Question 2.1 (2pts)
+
+Load and store the dataset into R. Show the first ten rows only.
+
+```{r}
+airq <- read_dta("airq.dta")
+head(airq, 10)
+```
+
+## Question 2.2 (2pts)
+
+Estimate a linear regression model that explains `airq` with the other variables using ordinary least squares (OLS). Interpret the coefficient estimates.
+
+```{r}
+reg1 <- lm(airq ~ ., data = airq)
+summary(reg1)
+```
+
+Interpretation: variable `coas` has a coefficient that is significant at 1%. The effect is negatively, meaning that being at the coast decreases the air quality index (better air). The magnitude is quite large - being at the coastal region reduces the index by an average of 33.4, more than one third of the average index (104.7). You can interpret the other variables similarly.
+
+## Question 2.3 (2pts)
+
+Test the null hypothesis that average income does not affect the air quality. Test the joint hypothesis that none of the variables has an effect on air quality. Explain your findings in words.
+
+To test the effect of average income on air quality, we only need to look at the $p$ value of the variable `medi`. The $p$ value is around 0.5, far greater than 5%, and therefore we do not reject the null hypothesis.
+
+For the joint hypothesis testing, we can look at the $F$ statistics at the bottom. The $p$ value is around 0.03, smaller than 5%, and therefore we can reject the null hypothesis that none of the variables has an effect on air quality.
+
+## Question 2.4 (3pts)
+
+Plot the residuals from the regression against the fitted values. Does it look like we have homoskedasticity? Run a formal test to cross-check your hypothesis.
+
+```{r}
+plot(x = reg1, which = 3)
+```
+
+It looks like we do not have homoskedasticity. To run a formal test, we use:
+
+```{r}
+ncvTest(reg1)
+```
+
+The test shows that at 5% significance level, we cannot reject the null hypothesis of homoskedasticity. However, we would reject the null if we set the significance level to be at 10%. For the sake of being careful, we should probably use the heteroskedasticity-consistent standard errors.
+
+## Question 2.5 (3pts)
+
+Extract the residuals from the regression results. Check the variance of the residuals against the indicator for coastal/non-coastal. What do you observe?
+
+```{r}
+airq$resid <- residuals(reg1)
+coas <- filter(airq, coas == 1)
+nocoas <- filter(airq, coas == 0)
+var(coas$resid)
+var(nocoas$resid)
+```
+
+The variances of the residuals are very different across coastal and non-coastal regions.
+
+## Question 2.6 (2pts)
+
+Search and find a simple command to test if the variances you found above are the same (it will be a $F$ test). What is the result? Given these results, present the version of standard errors of the regression coefficients that you think is correct.
+
+```{r}
+var.test(coas$resid, nocoas$resid)
+```
+
+At 5% significance level, we reject the null hypothesis that the variances are the same. Therefore the correct standard errors are given by the following:
+
+```{r}
+coeftest(reg1, vcov = vcovHC)
+```
+
+# Question 3 (9pts)
+
+This question uses the `Auto` dataset from the package `ISLR`.
+
+## Question 3.1 (1pt)
+
+Load and store the dataset `Auto` into R. There is no need to present the data.
+
+```{r}
+auto <- Auto
+```
+
+## Question 3.2 (2pts)
+
+Split the dataset randomly into two datasets of roughly equal size. We will use one of them to train the OLS algorithm and the other for testing it.
+
+```{r}
+set.seed(1)
+sample <- sample(c(TRUE, FALSE), nrow(auto), replace = TRUE, prob = c(0.5, 0.5))
+train <- auto[sample, ]
+test <- auto[!sample, ]
+```
+
+## Question 3.3 (1pt)
+
+Regress miles per gallon on the other variables and exclude `name` only. Use the training dataset only. Be careful with how you deal with the `origin` variable.
+
+```{r}
+train$origin <- as.factor(train$origin)
+train <- select(train, -c("name"))
+reg2 <- lm(mpg ~ ., data = train)
+summary(reg2)
+```
+
+## Question 3.4 (3pts)
+
+Use the `predict` function, predict miles per gallon in the testing dataset using the coefficients you obtained above. You may drop the `name` variable in both datasets. Show the first few predicted values.
+
+```{r}
+test$origin <- as.factor(test$origin)
+test <- select(test, -c("name"))
+predict_test <- predict(reg2, newdata = test)
+head(predict_test)
+```
+
+## Question 3.5 (2pts)
+
+Perform a test where the null hypothesis is that the predicted values and the actual values of `mpg` in the test dataset have the same mean. Justify in words why you think they should have the same variance or not.
+
+```{r}
+t.test(x = test$mpg, y = predict_test, var.equal = FALSE)
+```
+
+We can see that the $p$ value is quite high, suggesting that we should not reject the null hypothesis. For the variance, technically the variance of the two are not exactly the same, but you will get the point as long as you make a sensible argument.
+
+# Question 4 (12pts)
+
+This question uses the `colonial.dta` dataset. This dataset comes from a famous paper by Daron Acemoglu, Simon Johnson and James Robinson, titled “The Colonial Origins of Comparative Development: An Empirical Investigation”, published in the American Economic Review, December 2001, vol. 91, pp1369-1401. The authors want to investigate whether institutions (democracy, governance, rule of law etc.) matter for economic growth, in particular that countries with more secure protection of property rights have an advantage in encouraging capital accumulation.
+
+## Question 4.1 (1pt)
+
+Load and store the dataset `colonial.dta` into R. There is no need to present the data.
+
+```{r}
+colonial <- read_dta("colonial.dta")
+```
+
+## Question 4.2 (2pts)
+
+Regress log GDP per capita on measures of property protection. Take into account the potential presence of heteroskedasticity errors. What do you observe?
+
+```{r}
+reg3 <- lm(lgdp ~ prot, data = colonial)
+summary(reg3)
+coeftest(reg3, vcov = vcovHC)
+```
+
+The results show that the effect of property protection on GDP per capita is highly positively significant. A one unit increase in property protection measure increases log GDP per capita by 0.52 (GDP per capita goes up by 52%). The R-squared is also very high, indicating a high level of explanatory power by `prot`.
+
+## Question 4.3 (3pts)
+
+A simple regression of GDP per capita on some measure of the strength of property rights is vulnerable to the critique of reverse causality. They use an IV approach, instrumenting property rights with a measure of settler mortality from the 19th century. They argue this is a good instrument because parts of the world in which settler mortality was high tended to introduce institutions designed to exploit the area’s resources, while in areas where settler mortality was low, they tended not to do this. And it is argued that these early institutions are correlated with current institutions.
+
+Let's do IV (two stage least squares) by hand. In the first stage, regress `prot` against `logmort`. Use the `predict` command to create a new variable that contains the predicted values — call this `prothat`. Now regress `lgdp` on `prothat`.
+
+```{r}
+reg4 <- lm(prot ~ logmort, data = colonial)
+prothat <- predict(reg4)
+reg5 <- lm(lgdp ~ prothat, data = colonial)
+summary(reg5)
+```
+
+This is actually how IV is done step by step.
+
+## Question 4.4 (3pts)
+
+Now, use the appropriate command, get the IV results directly from R. How do they compare with the coefficients in the previous question? What about the standard errors?
+
+```{r}
+reg6 <- ivreg(lgdp ~ prot | logmort, data = colonial)
+summary(reg6)
+coeftest(reg6, vcov = vcovHC)
+```
+
+The coefficients are exactly the same. However the standard errors are different, regardless of whether it is heteroskedasticity-consistent. IV actually requires a re-calculation of the standard errors, and `ivreg` takes this into account, but not if you do it by hand.
+
+## Question 4.5 (3pts)
+
+Now, regress `lgdp` on `logmort` directly. Call this regression the "reduced form". Given the reduced form coefficient and another coefficient you already obtained, explain how you can get the IV estimate of the effect of `prot` on `lgdp`. *Hint: check one of your results in question 4.3.*
+
+```{r}
+reg7 <- lm(lgdp ~ logmort, data = colonial)
+coef(summary(reg7))["logmort", "Estimate"]/coef(summary(reg4))["logmort", "Estimate"]
+```
+
+Basically, the coefficient from regressing `lgdp` on `logmort` (the reduced form) divided by the coefficient from regressing and `prot` on `logmort` (the first stage) gets you the IV result. This can be proved mathematically.
