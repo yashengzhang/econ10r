@@ -1,0 +1,101 @@
+---
+title: "Econ 10R Homework 3 Solutions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(tidyverse)
+```
+
+# Question 1
+
+This question uses the `nycflights13` dataset. Pick two airlines, test if the flights from these two airlines have the same average departure delay.
+
+```{r}
+library(nycflights13)
+flights <- flights
+```
+
+After loading the flights, we can pick two airlines. Let's use `UA` and `AA` for this solution:
+
+```{r}
+ua <- filter(flights, carrier == "UA" & dep_delay != "NA")
+aa <- filter(flights, carrier == "AA" & dep_delay != "NA")
+```
+
+Let's use the `t.test` command to carry out the test:
+
+```{r}
+t.test(x = ua$dep_delay, y = aa$dep_delay, var.equal = FALSE)
+```
+
+This result suggests that we should reject the null hypothesis that they have the same mean, as the $p$ value is really small.
+
+#Question 2
+
+Next, look up `t.test` in R help or Google, perform two one-sided tests where the alternative hypothesis is that one of the sample means is less or greater than the other.
+
+We can simply specify `alternative` in the command:
+
+```{r}
+t.test(x = ua$dep_delay, y = aa$dep_delay, alternative = "greater", var.equal = FALSE)
+t.test(x = ua$dep_delay, y = aa$dep_delay, alternative = "less", var.equal = FALSE)
+```
+
+Clearly, if we set the alternative to be `greater`, then we should reject the null hypothesis. This makes sense as the average departure delay for UA is much higher than that of AA. If we set the alternative to be `less`, then it is clear that we should not reject the null hypothesis.
+
+# Question 3
+
+Regress the average departure delay on `distance` and a set of dummy variables, each representing a separate airline. Which airlines return a significant result?
+
+```{r}
+flights2 <- flights
+flights2$carrier <- as.factor(flights2$carrier)
+reg1 <- lm(dep_delay ~ distance + carrier, data = flights2)
+summary(reg1)
+```
+
+Note that UA is the omitted airline here, so it changes the interpretation of the intercept. Now all the effects are relative to the effects of UA. For example, compared to UA, AA reduces the average delay by around 8 minutes, and the effect is significant. We can draw conclusions for other airlines in a similar manner.
+
+# Question 4
+
+Repeat question 3, but this time regression departure delay on distance and the origin airport. What do you find?
+
+```{r}
+flights3 <- flights
+flights3$origin <- as.factor(flights2$origin)
+reg2 <- lm(dep_delay ~ distance + origin, data = flights3)
+summary(reg2)
+```
+
+The result suggests that flights originating from JFK and LGA have less delay than those from Newark, and the effect is significant.
+
+# Question 5
+
+Regress departure delay on distance and the hour of the flights. What do you find? What about the interaction between these two variables? How do you interpret the result?
+
+```{r}
+reg3 <- lm(dep_delay ~ distance + hour, data = flights)
+summary(reg3)
+reg4 <- lm(dep_delay ~ distance*hour, data = flights)
+summary(reg4)
+```
+
+Without the interaction term, flights that depart later in the day seem to have worse delays. However, if we add the interaction term between distance and hour, the effect of the interaction is negative, and distance does not have a significant effect any more. This suggests that within the same hour of departure, flights to destinations further away suffer less delays.
+
+# Question 6
+
+So far the regressions we ran all returned very low `R-squared`. This suggests that the variables we tried can only explain a small part of the variation in departure delay. Can you find an independent variable that returns a high `R-squared`? Can we interpret this outcome as causal?
+
+```{r}
+reg5 <- lm(dep_delay ~ arr_delay, data = flights)
+summary(reg5)
+```
+
+Clearly `arr_delay` gives a much higher `R-squared`. This is not surprising at all, but certainly not causal - if anything, it's departure delay that causes arrival delay, so there is a reverse causality issue here. At least one of the GM assumptions is violated.
+
+# Question 7
+
+Using this dataset, run another regression. You can pick your own dependent variable or use `mutate` to generate new variables of interest. Explain what this regression is trying to achieve (why is it interesting), and give a brief reason why or why don't you think that this regression gives a causal interpretation.

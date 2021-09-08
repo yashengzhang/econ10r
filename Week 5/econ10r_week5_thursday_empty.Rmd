@@ -16,7 +16,8 @@ library(tidyverse)
 In this part we will be doing regression analysis using R. First we need to load an interesting dataset. We can start with the `nycflight13`:
 
 ```{r}
-
+library(nycflights13)
+flights <- flights
 ```
 
 ## Estimation of regression coefficients
@@ -24,43 +25,47 @@ In this part we will be doing regression analysis using R. First we need to load
 In R, the command to do linear regression is `lm`, which stands for linear model. Let us run a simple regression with one independent variable first. Suppose we wish to know how time gained in air is affected by the distance from the origin, we can run the following analysis:
 
 ```{r}
-
+flights <- mutate(flights, gain = dep_delay - arr_delay)
+reg1 <- lm(formula = gain ~ distance, data = flights)
+reg1
 ```
 
-Let's talk about the two numbers. Starting with -0.002572 under `distance`. This is the estimated value of the coefficient associated with the variable `distance`. The interpretation is that an one mile increase in distance on average gains an extra 0.002572 minutes in the air. This is a very small effect, but remember that this is per one mile increase, and usually the distance is much longer. Furthermore, common sense suggest that we have the correct sign - longer distance means that it is easier to save time in the air.
+Let's talk about the two numbers. Starting with 0.002572 under `distance`. This is the estimated value of the coefficient associated with the variable `distance`. The interpretation is that an one mile increase in distance on average gains an extra 0.002572 minutes in the air. This is a very small effect, but remember that this is per one mile increase, and usually the distance is much longer. Furthermore, common sense suggest that we have the correct sign - longer distance means that it is easier to save time in the air.
 
-For the intercept, it is the expected value of the dependent variable when the independent variable is zero, and the result suggests that time gained in the air is around three minutes when the distance is zero. Of course, in our context this does not mean much as no distination has a distance of zero.
+For the intercept, it is the expected value of the dependent variable when the independent variable is zero, and the result suggests that time gained in the air is around three minutes when the distance is zero. Of course, in our context this does not mean much as no destination has a distance of zero.
 
 ## Hypothesis Testing
 
-Now that we have the coefficients ready, we can do hypothesis testing on the coefficients. We can compute the test statistics by hand but there is little point in doing that. To test each coefficient individually, we can simply do the following:
+Now that we have the coefficients ready, we can do hypothesis testing on the coefficients. We can compute the test statistics by hand but there is little point in doing that. To test each coefficient individually (and jointly), we can simply do the following:
 
 ```{r}
-
+summary(reg1)
 ```
 
 The `summary` function returns more information on the regression results. We now have the estimated standard errors for each coefficient, the test statistic (`t value`) as well as the $p$ value. The three asterisks indicate that the corresponding coefficient is significant at 0.1%. So even though the effect is very small, it is still highly significant.
 
-The above tests are done on each individual coefficient, but what about the regression as a whole? In this case the null hypothesis is given by $H_0: \beta_0=\beta_1=0$ against $H_1:$ at least one of them is not zero. Basically, this hypothesis does not care if a particular coefficient is significant, but rather if we have a significant coefficient at all. The construction of the test staitistic is even more complex, but with R we have the results with us right here: the $F$ statistic is the test statistic we are looking for, and the $p$ value is significantly less 0.1%, let alone 5%. So this model is significant, and it is no surprise because both variables (the intercept and the `distance`) are highly significant.
+The above tests are done on each individual coefficient, but what about the regression as a whole? In this case the null hypothesis is given by $H_0: \beta_0=\beta_1=0$ against $H_1:$ at least one of them is not zero. Basically, this hypothesis does not care if a particular coefficient is significant, but rather if we have a significant coefficient at all. The construction of the test statistic is even more complex, but with R we have the results with us right here: the $F$ statistic is the test statistic we are looking for, and the $p$ value is significantly less 0.1%, let alone 5%. So this model is significant, and it is no surprise because both variables (the intercept and the `distance`) are highly significant.
 
-Now, can we claim the result to be "causal"? Maybe, but maybe not. Remember that we need all the Gauss-Markov assumptions to hold for the regression to have a causal interpretation. There might be a lot of problems with the variable `distance`. For example, Some destinations (hence the distance) appear many times, and it is likely that there is something peculiar about each destination. Given this, one could argue that all the residual terms (the $\varepsilon$'s) associated with one destination (which contains many observations) may be correlated with each other, so the "non autocorrelation" assumption will fail. We will talk more about this later.
+Now, can we claim the result to be "causal"? Maybe, but maybe not. Remember that we need all the Gauss-Markov assumptions to hold for the regression to have a causal interpretation. There might be a lot of problems with the variable `distance`. For example, Some destinations (hence the distance) appear many times, and it is likely that there is something peculiar about each destination. Given this, one could argue that all the residual terms (the $\varepsilon$'s) associated with one destination (which contains many observations) may be correlated with each other, so the "no autocorrelation" assumption will fail. We will talk more about this later.
 
 # Multivariate Regression
 
 In general we have more than just one variable of interest. For this purpose, we need to switch to a different dataset. Let's install the package `ISLR` and load a dataset called `Auto` from it:
 
 ```{r eval=FALSE, include=TRUE}
-
+install.packages("ISLR")
 ```
 
 ```{r}
-
+library(ISLR)
+auto <- Auto
 ```
 
 This dataset contains nearly 400 models of cars alongside several variables that describe the car. The variable `mgp` stands for miles per gallon, `cylinders` is the number of cylinders, an integer between 4 and 8, `displacement` is the engine displacement (cu. inches), `horsepower` is the engine horsepower, `weight` is in lbs., `acceleration` is the time in seconds to accelerate from 0 to 60 mph, `year` is the model's year, `origin` is the origin of car (1. American, 2. European, 3. Japanese), and `name` is the vehicle name. Now suppose that we wish to regression `mpg` of the cars on all the variables except `name`, then we can simply write:
 
 ```{r}
-
+reg2 <- lm(formula = mpg ~ . - name, data = auto)
+summary(reg2)
 ```
 
 Note that `- name` takes away the variable `name` only.
@@ -70,23 +75,24 @@ Note that `- name` takes away the variable `name` only.
 Now we have some interesting results. Please try to interpret each coefficient without worrying about the significance first. Does any of the variable feel strange to interpret? Frankly, it is hard to interpret the coefficient on `origin`. What does an one unit increase in `origin` mean? It is not so clear. To solve this problem, we can try to run the same regression but with something called the "dummy variable" for each origin. A dummy variable takes only two values, 0 and 1. If true, it takes a value of 1, and if false, it takes 0. Now we can separate `origin` into three variables, `origin_US`, `origin_Europe` and `origin_Japan`. Each of these variables will be 1 if the car is from that region, and 0 otherwise. You can generate dummies in base R, but there is a package designed for this purpose specifically:
 
 ```{r eval=FALSE, include=TRUE}
-
+install.packages("fastDummies")
 ```
 
 ```{r}
-
+library(fastDummies)
 ```
 
 After loading the library, we can use the command `dummy_cols` to get columns of dummies depending on the value of the specified variable:
 
 ```{r}
-
+auto2 <- dummy_cols(auto, select_columns = "origin")
 ```
 
 Now let's run the regression again:
 
 ```{r}
-
+reg3 <- lm(mpg ~ . - name - origin, data = auto2)
+summary(reg3)
 ```
 
 Now what do we see? Well, `origin_3` seems to have been dropped by R automatically. Can you figure out why? This is actually related to a problem in the second Gauss-Markov assumption. If you think about it carefully, the intercept is equivalent to regressing the dependent variable on the number `1`. But notice that since a car comes from one of these three places, we must have `origin_1 + origin_2 + origin_3 = 1`. This violates the multicollinearity assumption! Therefore we cannot run this regression as this will cause issues in identification. This problem is called the "dummy variable trap". The simplest thing to do is to drop a dummy. This changes the interpretation of the intercept slightly, as it is now the expected value of the dependent variable conditional all regressors being 0 and the car is Japanese. Nevertheless it is the only solution we can have (of course you can drop another variable). You do not need to know the details about this problem, but to provide an intuition, imagine if you run a univariate regression with the intercept and an independent variable that is always equal to 1. Can you identify between $\beta_0$ and $\beta_1$?
@@ -94,7 +100,10 @@ Now what do we see? Well, `origin_3` seems to have been dropped by R automatical
 Another way to do this directly without creating the dummy variables is to do the following:
 
 ```{r}
-
+auto3 <- auto
+auto3$origin <- as.factor(auto3$origin)
+reg4 <- lm(mpg ~ . - name, data = auto3)
+summary(reg4)
 ```
 
 Using `as.factor` encodes the variable `origin` so that it is no longer treated as a continuous variable by R. Hence when we run the regression, `origin` automatically becomes three dummies. However, dummies may have other uses, so generating them may still be useful.
@@ -104,7 +113,8 @@ Using `as.factor` encodes the variable `origin` so that it is no longer treated 
 Sometimes we wish to explore the interactions between variables. What does this mean? Well, maybe engines that have a high horsepower benefit additionally if it also has a high displacement. To check this, we can use `*` to add an interaction term between `horsepower` and `displacement`:
 
 ```{r}
-
+reg5 <- lm(mpg ~ . - name + horsepower*displacement, data = auto3)
+summary(reg5)
 ```
 
 So it looks like both `horsepower` and `displacement` have a significant and negative effect on `mpg`, but their interaction term has a positive effect. What does this mean? Well, the truth is that interaction terms for continuous variables are quite hard to interpret, but the idea is that higher displacement and higher horsepower together increases miles per gallon. If you have two levels of displacement, call them high and low, then as you increase your horsepower, miles per gallon will increase more in your car has a high displacement compared to if it has a low displacement. In the future we will come across cases where the interaction term is between two dummy variables. Those cases make the interpretation easier.
@@ -116,7 +126,8 @@ We do not know if the above regressions are causal at this point. Let's leave it
 In previous weeks, we learned how to get the correlation between two variables in R. Correlation is the normalized relationship between two variables, which sounds a lot like regression. How do they compare? Let's try using the flights data:
 
 ```{r}
-
+cor(flights$gain, flights$distance, use = "pairwise.complete.obs")^2
+summary(reg1)
 ```
 
 So it seems like if we square the correlation coefficient, it is equal to the measure called `R-squared` from the regression. What is the `R-squared` ($R^2$)? It measures the proportion of the variance in the outcome variable that can be accounted for by the predictor. So in our case, about 1.1% of the variation in `gain` can be accounted for by variations in `distance`.

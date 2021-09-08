@@ -1,0 +1,257 @@
+---
+title: "Econ 10R Week 6"
+author: "Luke Zhang"
+output:
+  html_document:
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(fastDummies)
+library(ISLR)
+library(car) ## Install the "car" package if you haven't already
+library(lmtest) ## Install the "car" package if you haven't already
+library(sandwich) ## Install the "car" package if you haven't already
+library(haven) ## Install the "car" package if you haven't already
+library(AER) ## Install the "car" package if you haven't already
+```
+
+# Common Problems in Linear Regression
+
+In the last part, we formally introduced linear regression in R. Running linear regressions is not difficult in R or most other statistical software, but running them correctly is. In this part we will look at several common problems that people encounter when running linear regression. Specifically, these problems are particularly important for economists, as we are not only interested in the coefficients but also whether they represent a causal interpretation of the model.
+
+## Heteroskedasticity
+
+Recall that one of the GM assumptions is that errors (residuals in practice) are homoskedastic - their variance does not change across different values of the independent variable. In other words, OLS works on the assumption that all residuals are drawn from a population that has constant variance. On the other hand, heteroskedasticity is a systematic change in the spread of the residuals over the range of measured values.
+
+So how do we identify heteroskedasticity? One simple method is to plot the residuals against the fitted values of $y$ and check the patterns. Let's first load the data we used from last time and run some basic regressions:
+
+```{r}
+auto1 <- Auto
+auto1$origin <- as.factor(auto1$origin)
+reg1 <- lm(mpg ~ . - name, data = auto1)
+summary(reg1)
+```
+
+This is the version with dummy variables that we ran previously. Now let's check what the residuals look like by using the following function:
+
+```{r}
+plot(x = reg1, which = 3)
+```
+
+This graph shows the relationship between the fitted value of $y$ (denoted by $\hat{y}$) and the standardized residuals. Do not worry about the standardized residuals beyond the fact that it is simply the residuals re-scaled so that it has a standard deviation of 1 (we can do this because we only care about the spread of the residuals and not their absolute values). The `which = 3` command gets us the above graph, and for details you can Google it for some documentation on what the other numbers do.
+
+Just by staring at the plot, we can already see that the variance does not seem constant. As the fitted value increases, the variance of the residuals increases as well. This points us to a potential heteroskedasticity problem. Another way to show this is to do the following:
+
+```{r}
+ncvTest(reg1)
+```
+
+The `ncvTest` function is from the `car` package. It stands for non-constant variance test. You do not need to know the details, but it basically runs a regression of the residuals on the fitted values. As we can see in the results, the $p$ value is really small, suggesting that we should reject the null hypothesis (that the variance is constant).
+
+At this point, you may wonder what problems does heteroskedasticity cause. In short, it makes the standard errors of the $\beta$'s unreliable. This is a big problem since if we get the standard errors wrong, then results from hypothesis testing cannot be trusted. You will learn this more formally in a econometric theory class, but this is the rough idea.
+
+So how do we correct for it? The `lmtest` package provides a simple way with the following command:
+
+```{r}
+coeftest(reg1, vcov = vcovHC)
+```
+
+Compare to our original result:
+
+```{r}
+summary(reg1)
+```
+
+We observe that the standard errors for each coefficient has changed. This did not affect the significance across the two cases, but I would argue that this is more accidental than substantial. We could very well have had a different result entirely.
+
+## Autocorrelation
+
+Autocorrelation refers to the fact that the residuals from the regression are correlated with each other, most likely by some groups. For example, we mentioned previously that we regressing departure delays on a set of variables using the `nycflights13` dataset, we should be concerned that a particular airline or destination exhibits idiosyncrasies such that the residuals in that group will likely be correlated with each other.
+
+So how do we test for autocorrelation? In the `lmtest` package, there is a function `dwtest`. This function carries out the so-called Durbin-Watson test for autocorrelation. Put it simply, it is a test of the correlation between two consecutive standard errors. Let's apply it to the above regression:
+
+```{r}
+dwtest(reg1)
+```
+
+This suggests that we have a strong autocorrelation among the residuals. The DW test has many limitations, but it's a first indication. In the future you will learn more ways to detect autocorrelation. The problem with autocorrelation is similar to that of heteroskedasticity, in that it affects the accuracy of the standard errors. So how can we deal with it? The most commonly used method is to cluster the standard errors at a level higher than the unit of observation. For example, we may expect that cars from different origins or years have idiosyncrasies that cause them to have correlated standard errors. Practically, people have found that clustering needs to have at least 20 units, and preferably 30-50. Clearly neither `year` nor `origin` satisfies this requirement. However, what we can do is to generate a new identifier that is the combination of both `year` and `origin`. The simplest way to create this new variable is to multiply `origin` with `year`:
+
+```{r}
+auto2 <- mutate(Auto, origin_year = origin*year)
+auto2$origin <- as.factor(auto2$origin)
+```
+
+Now let's check the number of unique `origin_year` identifier:
+
+```{r}
+length(unique(auto2$origin_year))
+```
+
+We get 39, which is good enough. Let's recap what we are doing here. Basically, we are saying that for the observed cars, each origin-year combination may exhibit idiosyncrasies that make all observations within this combination have residuals that are correlated with each other. In order to solve it, we can "cluster" the standard errors at the origin-year level - recalculating the standard errors based on the assumption that errors in the same group are correlated with each other. Again, there is no need to know the detailed math, but this is the general idea.
+
+Now let's apply the clustered standard errors:
+
+```{r}
+reg2 <- lm(mpg ~ . - name - origin_year, data = auto2)
+coeftest(reg2, vcov = vcovCL, cluster = ~ origin_year)
+```
+
+Compare to our initial results:
+
+```{r}
+coeftest(reg1, vcov = vcovHC)
+```
+
+Note that clustered standard errors account for heteroskedasticity by design, so there is no need to worry about it here. As we can see, clustered standard errors changed the $p$ values for several variables, so that the results from hypothesis testing are also different. Some of the variables are no longer statistically significant at the 5% level. This shows how important clustering is. If we fail to cluster when appropriate, we will be misreporting the significance of several variables.
+
+In actual research, thinking about whether to cluster standard errors, and at what levels the cluster should be, is an essential skill to be learned. You will need to justify your choice of levels. Some are easier to explain, for example if you regress future income on school grades of a particular school, it is quite likely that the standard errors are correlated within a given class. Others are more difficult to explain. For the above example, using origin-year seems appropriate, but it is still subject to debate.
+
+## Instrumental Variable
+
+Most of the discussions on linear regression centers around the third GM assumption, that the error term has zero mean conditional on the regressors. This condition is often referred to as the exogeneity condition, and may be violated by a number of reasons, resulting in endogeneity. Previously, we discussed reasons such as reverse causality and selection bias. Another reason is omitted variable - variables that can affect both $y$ and $x$'s are not included and therefore end up in the error term, making the $x$'s correlated with the error terms. Furthermore, measurement errors on the $x$'s can also result in the $x$'s being endogenous.
+
+There are many ways in which the exogeneity condition can be violated. We are not covering all of them here, and we do not discuss the mathematics behind them. However, there are ways to mitigate these problems and they can be done in R.
+
+The most frequently used method is call instrumental variable. Basically, once you've identified an endogenous variable, we have to find another variable (the instrument) that affects the dependent variable $y$ to replace the endogenous variable $x$. However, we still want to know the coefficient on $x$, so the instrument has to be such that it affects $y$ only through $x$ and through no other means. Let's use an example to demonstrate what this means. First, we load a new dataset (using `read_dta` from the `haven` package under the `tidyverse` package):
+
+```{r}
+griliches <- read_dta("griliches.dta")
+```
+
+This dataset is from Griliches (1970). The author models wage (`lw`) on several regressors:
+
+```{r}
+griliches$year <- as.factor(griliches$year)
+reg3 <- lm(lw ~ s + expr + tenure + rns + smsa + year + iq, data = griliches)
+summary(reg3)
+coeftest(reg3, vcov = vcovHC)
+```
+
+The variables stand for, from first to last, years of schooling, experience, job-tenure, indicator for residency in the South, indicator for urban versus rural, year dummies and IQ score.
+
+Now, what is the concern here? The author wants to know how ability affects wage, but since ability is unobservable, the best they can do is to use IQ score to proxy for ability. IQ scores can be considered as a mismeasured version of ability. We mentioned that measurement error can cause endogeneity problems in regression, so this is an example of that.
+
+So how do we solve this problem with instrumental variable? We need to find one or more variables that affect the worker's wage through nothing but ability. Note that you need at least as many IVs as your endogenous variable, and in our case we need at least one. However, you can have more than one instruments for one endogenous variable. When doing the IV this way, it is called the two stage least squares estimation.
+
+So the author proposed the following four variables to instrument for IQ (the mismeasured version of ability): `med` (mothers level of education), `kww` (score on another standardized test), `age` (the worker's age in year) and `mrt` (indicator of marital status).
+
+Do these variables seem like they affect wage only through ability? Probably not, especially for `med` and `mrt`. Mother's education level may be associated with the mother's social connection, which could potentially affect the child's social connection and hence the wage. Being married may affect one's wage through a variety of ways. Age may also affect a worker's wage through things other than ability, even if we are already controlling for experience. Anyway, let's see how instrumental variable estimation is implemented in R. First, let's do what the author did and include all four instruments in the regression (using `ivreg` from the `AER` package):
+
+```{r}
+reg4 <- ivreg(lw ~ s + expr + tenure + rns + smsa + year + iq | s + expr + tenure + rns + smsa + year
+              + med + mrt + age + kww, data = griliches)
+summary(reg4)
+coeftest(reg4, vcov = vcovHC)
+```
+
+So we can see that IQ use to have a coefficient that is significant at 5%, but no longer. Should we trust this result? Well, remember that instruments need to affect the outcome through the endogenous variable only. What we can do is to regress IQ on all the instruments and see which of the instruments are actually relevant:
+
+```{r}
+reg5 <- lm(iq ~ med + mrt + age + kww, data = griliches)
+coeftest(reg5, vcov = vcovHC)
+```
+
+So it seems like age is not a very relevant instrument. If we drop `age`, we get the following results for the IV regression:
+
+```{r}
+reg6 <- ivreg(lw ~ s + expr + tenure + rns + smsa + year + iq | s + expr + tenure + rns + smsa + year
+              + med + mrt + kww, data = griliches)
+summary(reg6)
+coeftest(reg6, vcov = vcovHC)
+```
+
+With the updated set of instruments, IQ now has a significant coefficient. How should we interpret this? It just shows how difficult selecting good instruments is. The results can be very sensitive so you need good justification for your instruments. There are more formal tests on instrument validity and relevance, and you will learn them in the econometrics course. For now, just be aware of this problem, and hopefully when you come across them in the future, these codes will be useful as a baseline result.
+
+# Logistic Regression
+
+So far we have run regression using $y$ variables that are continuous. But sometimes our dependent variable may be categorical - it is either 0 or 1 (no or yes, true or false, isn't or is). We can still do linear regression on this type of $y$, but the interpretation is not so straightforward. This is because in linear regression, the coefficients on the independent variables are not bound by anything, so it is possible (and quite likely) that you will end up in the situation where the predicted $y$ is negative or over 1. In other words, linear models are not terribly suited for this purpose.
+
+This is where we call the help of the logistic models. W can must model $p(x)$ using a function that gives outputs between 0 and 1 for all values of $x$. Many functions meet this description. In logistic regression, we use the logistic function:
+
+$$
+p(x)=\frac{e^{\beta_{0}+\beta_{1} x}}{1+e^{\beta_{0}+\beta_{1}x}}
+$$
+
+No need to worry about the math here. Just be aware that this regression takes the values of the $x$'s and returns a probability that lies strictly between 0 and 1.
+
+## Running Logistic Regression
+
+Let's load a dataset and see what these all mean in practice. In the package `ISLR`, there is a simulated dataset called `Default` that has information on ten thousand customers such as whether the customer defaulted, is a student, the average balance carried by the customer and the income of the customer:
+
+```{r}
+default <- as_tibble(ISLR::Default)
+```
+
+Let's add a bit of machine learning flavor into the study of logistic regression. We can split the sample into two parts randomly, one called `train`, which we use to run the regression (train the algorithm), and the other test, which we use to check if the parameters offer good predictions out of the sample:
+
+```{r}
+set.seed(1)
+sample <- sample(c(TRUE, FALSE), nrow(default), replace = TRUE, prob = c(0.6, 0.4))
+train <- default[sample, ]
+test <- default[!sample, ]
+```
+
+The function to run logistic regression is `glm`, standing for generalized linear model. Let's regress default on the variable balance first:
+
+```{r}
+reg7 <- glm(default ~ balance, family = binomial, data = train)
+summary(reg7)
+```
+
+Now we can see that `balance` has a highly significant coefficient that is positive, meaning that higher outstanding balance represents a higher probability of default, which is not surprising. However, one should be cautious about directly interpreting the value of the coefficient, as it does not really represent increases or decreases in probability. For now, it suffices to look at only the sign of the coefficient. Here we specify `family = binomial` to tell R to run the logistic model instead of other generalized linear models. Logistic regressions are estimated with maximum likelihood method.
+
+What does the logistic regression results look like? We can plot the predicted default probability using the following command:
+
+```{r}
+default <- mutate(default, prob = ifelse(default == "Yes", 1, 0))
+ggplot(default, aes(balance, prob)) +
+geom_point(alpha = .15) +
+geom_smooth(method = "glm", method.args = list(family = "binomial")) +
+ggtitle("Logistic regression model fit") +
+xlab("Balance") +
+ylab("Probability of default")
+```
+
+We first encode the "Yes" and "No" in the dataset into 1 and 0 so that we can plot them. Basically, this graph tells us that with an outstanding balance of 1000 dollars or less, the probability of default is practically 0. However, from 1000 dollars upwards, the probability of default increases dramatically. This graph nicely visualizes what the logistic regression does - it offers a predication of the outcome based on the independent variables.
+
+We can change the independent variable to another one or include more of them:
+
+```{r}
+reg8 <- glm(default ~ ., family = binomial, data = train)
+summary(reg8)
+```
+
+We should be cautious about the results here. Once we have added more regressors, the problem of the regressors being correlated arises. This may confound our findings. We won't go into the details for now, but just be aware that it can be a lot harder to interpret results with multiple regressors than just a single regressor.
+
+## Testing Predictions
+
+Let's run two more models, each with a different variable or include more variables
+
+```{r}
+reg9 <- glm(default ~ student, family = binomial, data = train)
+summary(reg9)
+```
+
+While `student` is significant at 5%, `income` is not. Regardless, let's keep all the results. Now we use each model to predict whether a person defaults using the `test` sample, and compare the results:
+
+```{r}
+test1 <- predict(reg7, newdata = test, type = "response")
+test2 <- predict(reg9, newdata = test, type = "response")
+test3 <- predict(reg8, newdata = test, type = "response")
+```
+
+We use `type = "response"` to tell R to return the predicted probability of default. Now what we have are three vectors, each containing the predicted probability of default for the observations in the `test` sample, based on the three different models. From here it is not too clear which one is better, so we need to convert these probabilities into actual, solid prediction. To do this, we need to pick a threshold, say 50%, such that if the model predicts a probability of default greater than 50%, we count this person as being predicted to default. Let's see how accurate our predictions are:
+
+```{r}
+model1 <- prop.table(table(test$default, test1 > 0.5))
+model2 <- prop.table(table(test$default, test2 > 0.5))
+model3 <- prop.table(table(test$default, test3 > 0.5))
+list(model1, model2, model3)
+```
+
+Here, "No" and "Yes" mean no default and defaulted respectively, while "False" and "True" mean predicted to not default and predicted to default respectively. Therefore, we can see that for the first model, we have a 95.7% true negative rate - the person did not default and we correctly predicted it. For `model1` and `model3`, the type I and II errors are very small. For `model2`, the model never predicts that the person will default, so despite a high rate of true negative, it does not seem like the best model out of the three.
+
+Similar to linear regression, we also need to be aware of potential endogeneity problems in logistic regression. Linear regressions can also be made to predict outcomes, and it is also one of the most widely used algorithms in machine learning. However, as economists, we care primarily about exogeneity - whether the model gives a causal interpretation. Therefore, in future econometrics classes, you will be studying a lot of ways to deal with endogeneity. We introduced a few solutions to those problems, and you will hopefully find useful in the future.
