@@ -381,7 +381,7 @@ head(predict_test)</code></pre>
 </div>
 <div id="question-4.2-2pts" class="section level2">
 <h2>Question 4.2 (2pts)</h2>
-<p>Regress log GDP per capita on measures of property protection. Take into account the potential presence of heteroskedasticity errors. What do you observe?</p>
+<p>Regress log GDP per capita on measures of property protection. Take into account the potential presence of heteroskedastic errors. What do you observe?</p>
 <pre class="r"><code>reg3 &lt;- lm(lgdp ~ prot, data = colonial)
 summary(reg3)</code></pre>
 <pre><code>## 
@@ -416,7 +416,7 @@ summary(reg3)</code></pre>
 <div id="question-4.3-3pts" class="section level2">
 <h2>Question 4.3 (3pts)</h2>
 <p>A simple regression of GDP per capita on some measure of the strength of property rights is vulnerable to the critique of reverse causality. They use an IV approach, instrumenting property rights with a measure of settler mortality from the 19th century. They argue this is a good instrument because parts of the world in which settler mortality was high tended to introduce institutions designed to exploit the area’s resources, while in areas where settler mortality was low, they tended not to do this. And it is argued that these early institutions are correlated with current institutions.</p>
-<p>Let’s do IV (two stage least squares) by hand. In the first stage, regress <code>prot</code> against <code>logmort</code>. Use the <code>predict</code> command to create a new variable that contains the predicted values — call this <code>prothat</code>. Now regress <code>lgdp</code> on <code>prothat</code>.</p>
+<p>Let’s do IV (two stage least squares) by hand. In the first stage, regress <code>prot</code> against <code>logmort</code>. Use the <code>predict</code> command to create a new variable that contains the predicted values (fitted value) of <code>prot</code> — call this <code>prothat</code>. Now regress <code>lgdp</code> on <code>prothat</code>.</p>
 <pre class="r"><code>reg4 &lt;- lm(prot ~ logmort, data = colonial)
 prothat &lt;- predict(reg4)
 reg5 &lt;- lm(lgdp ~ prothat, data = colonial)

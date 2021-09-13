@@ -1,5 +1,5 @@
 ---
-title: "Econ 10R Homework 3 Solutions"
+title: "Econ 10R Homework 4 Solutions"
 output: html_document
 ---
 
@@ -99,3 +99,5 @@ Clearly `arr_delay` gives a much higher `R-squared`. This is not surprising at a
 # Question 7
 
 Using this dataset, run another regression. You can pick your own dependent variable or use `mutate` to generate new variables of interest. Explain what this regression is trying to achieve (why is it interesting), and give a brief reason why or why don't you think that this regression gives a causal interpretation.
+
+For this question, you're free to generate your own variable. As long as you make a sensible argument you will be awarded points.

@@ -10,10 +10,10 @@ library(tidyverse)
 library(fastDummies) ## Install the "fastDummies" package if you haven't already
 library(ISLR) ## Install the "ISLR" package if you haven't already
 library(car) ## Install the "car" package if you haven't already
-library(lmtest) ## Install the "car" package if you haven't already
-library(sandwich) ## Install the "car" package if you haven't already
-library(haven) ## Install the "car" package if you haven't already
-library(AER) ## Install the "car" package if you haven't already
+library(lmtest) ## Install the "lmtest" package if you haven't already
+library(sandwich) ## Install the "sandwich" package if you haven't already
+library(haven) ## Install the "haven" package if you haven't already
+library(AER) ## Install the "AER" package if you haven't already
 ```
 
 *40pts in total*
@@ -178,7 +178,7 @@ colonial <- read_dta("colonial.dta")
 
 ## Question 4.2 (2pts)
 
-Regress log GDP per capita on measures of property protection. Take into account the potential presence of heteroskedasticity errors. What do you observe?
+Regress log GDP per capita on measures of property protection. Take into account the potential presence of heteroskedastic errors. What do you observe?
 
 ```{r}
 reg3 <- lm(lgdp ~ prot, data = colonial)
@@ -192,7 +192,7 @@ The results show that the effect of property protection on GDP per capita is hig
 
 A simple regression of GDP per capita on some measure of the strength of property rights is vulnerable to the critique of reverse causality. They use an IV approach, instrumenting property rights with a measure of settler mortality from the 19th century. They argue this is a good instrument because parts of the world in which settler mortality was high tended to introduce institutions designed to exploit the area’s resources, while in areas where settler mortality was low, they tended not to do this. And it is argued that these early institutions are correlated with current institutions.
 
-Let's do IV (two stage least squares) by hand. In the first stage, regress `prot` against `logmort`. Use the `predict` command to create a new variable that contains the predicted values — call this `prothat`. Now regress `lgdp` on `prothat`.
+Let's do IV (two stage least squares) by hand. In the first stage, regress `prot` against `logmort`. Use the `predict` command to create a new variable that contains the predicted values (fitted value) of `prot` — call this `prothat`. Now regress `lgdp` on `prothat`.
 
 ```{r}
 reg4 <- lm(prot ~ logmort, data = colonial)
